@@ -6,11 +6,11 @@
 #    By: edidier <edidier@student.42.fr>            +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/05/27 18:33:08 by edidier           #+#    #+#              #
-#    Updated: 2026/05/28 14:54:33 by edidier          ###   ########.fr        #
+#    Updated: 2026/05/28 16:12:13 by edidier          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
-NAME		=	echo_server
+NAME		=	ircserv
 CXX			=	c++
 CXXFLAGS	=	-Wall -Wextra -Werror -std=c++98 -Iincs
 
