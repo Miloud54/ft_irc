@@ -10,7 +10,7 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "Server.hpp"
+#include "../incs/Server.hpp"
 #include <iostream>
 #include <cstdlib>
 
