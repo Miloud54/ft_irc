@@ -3,26 +3,27 @@
 /*                                                        :::      ::::::::   */
 /*   main.cpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mamakaro <mamakaro@student.42.fr>          +#+  +:+       +#+        */
+/*   By: edidier <edidier@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/26 11:07:46 by edidier           #+#    #+#             */
-/*   Updated: 2026/05/28 14:21:27 by mamakaro         ###   ########.fr       */
+/*   Updated: 2026/05/28 16:01:25 by edidier          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "Server.hpp"
+#include "../incs/Server.hpp"
 #include <iostream>
 #include <cstdlib>
 
 int main(int ac, char **av)
 {
-    if (ac != 2) 
+    if (ac != 3) 
     {   
-        std::cerr << "Usage: ./echo_server <port>" << std::endl;
+        std::cerr << "Usage: ./echo_server <port> <password>" << std::endl;
         return 1;
     }
 
     int port = atoi(av[1]);
+    std::string password = av[2];
 
     if (port <= 0 || port > 65535)
     {
@@ -32,7 +33,7 @@ int main(int ac, char **av)
 
     try 
     {
-        Server server(port);
+        Server server(port, password);
         server.run();
     } 
     catch (const std::exception& e)

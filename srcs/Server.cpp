@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mamakaro <mamakaro@student.42.fr>          +#+  +:+       +#+        */
+/*   By: edidier <edidier@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/22 16:13:02 by edidier           #+#    #+#             */
-/*   Updated: 2026/05/28 14:35:26 by edidier          ###   ########.fr       */
+/*   Updated: 2026/05/28 17:02:02 by edidier          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,9 +18,16 @@
 #include <netinet/in.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <sstream>
 
-Server::Server(int port) {
+Server::Server(int port, const std::string& password) : _password(password) {
     _fds.reserve(64);
+
+    _commands["PASS"] = &Server::cmdPass;
+    _commands["NICK"] = &Server::cmdNick;
+    _commands["USER"] = &Server::cmdUser;
+    _commands["QUIT"] = &Server::cmdQuit;
+    
     setupSocket(port);
 }
 
@@ -126,12 +133,6 @@ void Server::handleClient(int idx) {
     /*revc() lit les donnee dispo sur ce Fd
     Retourne : nb d'octets lus, 0 si deco propre, -1 si erreur*/
     int bytes = recv(_fds[idx].fd, buf, sizeof(buf) - 1, 0);
-    _clients[idx - 1].appendToBuffer(std::string(buf, bytes));
-    
-    std::string line;
-    while(!(line = _clients[idx - 1].extractLine()).empty())
-        std::cout << "Received: " << line << std::endl;
-  
     if (bytes <= 0)
     {
         /*0 = deco propre (client a ferme la connexion)
@@ -143,6 +144,14 @@ void Server::handleClient(int idx) {
         removeClient(idx);
         return;
     }
+
+    std::string data(buf, bytes);
+    _clients[idx - 1].appendToBuffer(data);
+
+    std::string line;
+    while(!(line = _clients[idx - 1].extractLine()).empty())
+        dispatch(_clients[idx - 1], line);
+
 }
 
 void Server::removeClient(int idx) {
@@ -150,4 +159,51 @@ void Server::removeClient(int idx) {
     _fds.erase(_fds.begin() + idx);
     _clients.erase(_clients.begin() + (idx - 1));
     
+}
+
+static std::vector<std::string> splitline(const std::string& line) {
+    std::vector<std::string> tokens;
+    std::istringstream iss(line);
+    std::string token;
+    while (iss >> token)
+        tokens.push_back(token);
+    return tokens;
+}
+
+void Server::dispatch(Client& client, const std::string& line) {
+    std::vector<std::string> tokens = splitline(line);
+    if (tokens.empty())
+        return;
+    
+    std::string command = tokens[0];
+    std::vector<std::string> params(tokens.begin() + 1, tokens.end());
+    std::cout << "Command: " << command << std::endl;
+
+    if (_commands.count(command) == 0)
+    {
+        std::cout << "Unknown command: " << command << std::endl;
+        return;
+    }
+
+    (this->*_commands[command])(client, params);
+}
+
+void Server::cmdPass(Client& client, std::vector<std::string>& params) {
+    (void)client;
+    (void)params;
+} 
+
+void Server::cmdNick(Client& client, std::vector<std::string>& params) {
+    (void)client;
+    (void)params;
+}
+
+void Server::cmdUser(Client& client, std::vector<std::string>& params) {
+    (void)client;
+    (void)params;
+}
+
+void Server::cmdQuit(Client& client, std::vector<std::string>& params) {
+    (void)client;
+    (void)params;
 }
