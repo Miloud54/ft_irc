@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mamakaro <mamakaro@student.42.fr>          +#+  +:+       +#+        */
+/*   By: edidier <edidier@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/22 16:13:02 by edidier           #+#    #+#             */
-/*   Updated: 2026/05/28 14:35:26 by edidier          ###   ########.fr       */
+/*   Updated: 2026/05/28 16:01:25 by edidier          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 
-Server::Server(int port) {
+Server::Server(int port, const std::string& password) : _password(password) {
     _fds.reserve(64);
     setupSocket(port);
 }
@@ -126,12 +126,6 @@ void Server::handleClient(int idx) {
     /*revc() lit les donnee dispo sur ce Fd
     Retourne : nb d'octets lus, 0 si deco propre, -1 si erreur*/
     int bytes = recv(_fds[idx].fd, buf, sizeof(buf) - 1, 0);
-    _clients[idx - 1].appendToBuffer(std::string(buf, bytes));
-    
-    std::string line;
-    while(!(line = _clients[idx - 1].extractLine()).empty())
-        std::cout << "Received: " << line << std::endl;
-  
     if (bytes <= 0)
     {
         /*0 = deco propre (client a ferme la connexion)
@@ -143,6 +137,14 @@ void Server::handleClient(int idx) {
         removeClient(idx);
         return;
     }
+
+    std::string data(buf, bytes);
+    _clients[idx - 1].appendToBuffer(data);
+
+    std::string line;
+    while(!(line = _clients[idx - 1].extractLine()).empty())
+        std::cout << "Received: " << line << std::endl;
+
 }
 
 void Server::removeClient(int idx) {

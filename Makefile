@@ -3,24 +3,24 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: mamakaro <mamakaro@student.42.fr>          +#+  +:+       +#+         #
+#    By: edidier <edidier@student.42.fr>            +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/05/27 18:33:08 by edidier           #+#    #+#              #
-#    Updated: 2026/05/28 12:52:00 by mamakaro         ###   ########.fr        #
+#    Updated: 2026/05/28 14:54:33 by edidier          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
-NAME	=	echo_server
-CXX		=	c++
-CXXFLAGS	=	-Wall -Wextra -Werror -std=c++98 -Iinc	
+NAME		=	echo_server
+CXX			=	c++
+CXXFLAGS	=	-Wall -Wextra -Werror -std=c++98 -Iincs
 
-SRCS	= srcs/main.cpp srcs/server.cpp
+SRCS	= srcs/main.cpp srcs/Server.cpp srcs/Client.cpp
 OBJS	= $(SRCS:.cpp=.o)
 
 all: $(NAME)
 
 $(NAME): $(OBJS)
-	@$(CXX) $(CFLAGS) -o $(NAME) $(OBJS)
+	@$(CXX) $(CXXFLAGS) -o $(NAME) $(OBJS)
 
 clean:
 	rm -rf $(OBJS)

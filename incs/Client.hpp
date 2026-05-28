@@ -6,7 +6,7 @@
 /*   By: edidier <edidier@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/28 10:58:40 by edidier           #+#    #+#             */
-/*   Updated: 2026/05/28 14:07:07 by edidier          ###   ########.fr       */
+/*   Updated: 2026/05/28 14:55:40 by edidier          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,9 +35,9 @@ class Client {
 
         void setNickname(const std::string& nick);
         void setUsername(const std::string& user);
-        void setRealname(const std:string& real);
+        void setRealname(const std::string& real);
         void setRegistered(bool val);
 
-        void appendToBuffer(std::string& data);
+        void appendToBuffer(const std::string& data);
         std::string extractLine();
-}
+};
