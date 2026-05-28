@@ -40,4 +40,4 @@ class Client {
 
         void appendToBuffer(std::string& data);
         std::string extractLine();
-}
+};
