@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: edidier <edidier@student.42.fr>            +#+  +:+       +#+        */
+/*   By: mamakaro <mamakaro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/22 16:13:02 by edidier           #+#    #+#             */
-/*   Updated: 2026/05/28 17:46:38 by edidier          ###   ########.fr       */
+/*   Updated: 2026/05/28 18:18:09 by mamakaro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,6 +27,11 @@ Server::Server(int port, const std::string& password) : _password(password) {
     _commands["NICK"] = &Server::cmdNick;
     _commands["USER"] = &Server::cmdUser;
     _commands["QUIT"] = &Server::cmdQuit;
+    _commands["PING"] = &Server::cmdPing;
+    _commands["PONG"] = &Server::cmdPong;
+    _commands["PRIVMSG"] = &Server::cmdPrivmsg;
+    _commands["NOTICE"] = &Server::cmdNotice;
+    _commands["MODE"] = &Server::cmdMode;
     
     setupSocket(port);
 }
@@ -203,6 +208,11 @@ void Server::cmdUser(Client& client, std::vector<std::string>& params) {
 }
 
 void Server::cmdQuit(Client& client, std::vector<std::string>& params) {
+    (void)client;
+    (void)params;
+}
+
+void Server::cmdPong(Client& client, std::vector<std::string>& params) {
     (void)client;
     (void)params;
 }
