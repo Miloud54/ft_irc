@@ -3,7 +3,7 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: edidier <edidier@student.42.fr>            +#+  +:+       +#+        */
+/*   By: mamakaro <mamakaro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/22 16:13:02 by edidier           #+#    #+#             */
 /*   Updated: 2026/05/28 14:35:26 by edidier          ###   ########.fr       */
@@ -80,7 +80,7 @@ void Server::run() {
             throw std::runtime_error("poll() failed");
         
         /*Parcours tous les Fds pour trouver ceux qui sont prets*/
-        for (int i = 0; i < _fds.size(); i++)
+        for (size_t i = 0; i < _fds.size(); i++)
         {
             /*revents est rempli par poll() - POLLIN = donnees dispo
             Si ce Fd n'a rien a lire, on passe au suivant*/
