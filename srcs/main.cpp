@@ -6,11 +6,11 @@
 /*   By: edidier <edidier@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/26 11:07:46 by edidier           #+#    #+#             */
-/*   Updated: 2026/05/27 18:33:00 by edidier          ###   ########.fr       */
+/*   Updated: 2026/05/28 10:58:28 by edidier          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "server.hpp"
+#include "Server.hpp"
 #include <iostream>
 #include <cstdlib>
 
