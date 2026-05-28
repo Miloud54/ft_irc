@@ -6,13 +6,13 @@
 #    By: mamakaro <mamakaro@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/05/27 18:33:08 by edidier           #+#    #+#              #
-#    Updated: 2026/05/28 12:24:46 by mamakaro         ###   ########.fr        #
+#    Updated: 2026/05/28 12:52:00 by mamakaro         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 NAME	=	echo_server
-CC		=	c++
-CFLAGS	=	-Wall -Wextra -Werror -std=c++98	
+CXX		=	c++
+CXXFLAGS	=	-Wall -Wextra -Werror -std=c++98 -Iinc	
 
 SRCS	= srcs/main.cpp srcs/server.cpp
 OBJS	= $(SRCS:.cpp=.o)
@@ -20,7 +20,7 @@ OBJS	= $(SRCS:.cpp=.o)
 all: $(NAME)
 
 $(NAME): $(OBJS)
-	@$(CC) $(CFLAGS) -o $(NAME) $(OBJS)
+	@$(CXX) $(CFLAGS) -o $(NAME) $(OBJS)
 
 clean:
 	rm -rf $(OBJS)
