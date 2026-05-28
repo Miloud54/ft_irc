@@ -6,11 +6,11 @@
 /*   By: mamakaro <mamakaro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/26 11:07:46 by edidier           #+#    #+#             */
-/*   Updated: 2026/05/28 11:59:42 by mamakaro         ###   ########.fr       */
+/*   Updated: 2026/05/28 12:34:22 by mamakaro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "server.hpp"
+#include "inc/server.hpp"
 #include <iostream>
 #include <cstdlib>
 

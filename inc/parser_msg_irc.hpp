@@ -5,7 +5,7 @@
 #include <vector>
 #include <map>
 
-
+// Parsed IRC command
 struct IrcCommand
 {
     std::string prefix;
@@ -18,6 +18,15 @@ class Parser
 {
     private:
         std::map<int, std::string> _buffers;
+    IrcCommand parseLine(const std::string& line);
+
+
+    public:
+        Parser();
+        ~Parser();
+
+        std::vector<IrcCommand> feed(int clientFd, const char *data, int bytes);
+        void removeClient(int clientFd);
 };
 
 
