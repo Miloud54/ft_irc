@@ -194,8 +194,7 @@ void Server::dispatch(Client& client, const std::string& line) {
 }
 
 void Server::cmdPass(Client& client, std::vector<std::string>& params) {
-    (void)client;
-    (void)params;
+    if (client.isRegistered == true)
 } 
 
 void Server::cmdNick(Client& client, std::vector<std::string>& params) {
