@@ -6,40 +6,40 @@
 /*   By: edidier <edidier@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/28 11:50:52 by edidier           #+#    #+#             */
-/*   Updated: 2026/05/28 14:11:14 by edidier          ###   ########.fr       */
+/*   Updated: 2026/05/28 16:09:43 by edidier          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Client.hpp"
 #include <string>
+#include <unistd.h>
 
 Client::Client(int fd) : _fd(fd), _registered(false), _nickname(""), _username(""), _realname("") {}
 
 Client::~Client() {
-    close(_fd);
 }
 
-int Client::getFd() {
+int Client::getFd() const {
     return _fd;
 }
 
-bool Client::isRegistered() {
+bool Client::isRegistered() const {
     return _registered;
 }
 
-std::string Client::getNickname () {
+std::string Client::getNickname() const {
     return _nickname;
 }
 
-std::string Client::getUsername() {
+std::string Client::getUsername() const {
     return _username;
 }
 
-std::string Client::getRealname() {
+std::string Client::getRealname() const {
     return _realname;
 }
 
-std::string Client::getBuffer() {
+std::string Client::getBuffer() const {
     return _readBuffer;
 }
 
@@ -59,15 +59,27 @@ void Client::setRegistered(bool val) {
     _registered = val;
 }
 
-void Client::appendToBuffer(std::string& data) {
+void Client::appendToBuffer(const std::string& data) {
     _readBuffer += data;
 }
 
 std::string Client::extractLine() {
     size_t pos = _readBuffer.find("\r\n");
+    size_t delimiterSize = 2;
+
+    if (pos == std::string::npos)
+    {
+        pos = _readBuffer.find('\n');
+        delimiterSize = 1;
+    }
+
     if (pos == std::string::npos)
         return "";
+
+    if (delimiterSize == 2 && pos > 0 && _readBuffer[pos - 1] == '\r')
+        pos--;
+
     std::string line = _readBuffer.substr(0, pos);
-    _readBuffer = _readBuffer.substr(pos + 2);
+    _readBuffer = _readBuffer.substr(pos + delimiterSize);
     return line;
 }
