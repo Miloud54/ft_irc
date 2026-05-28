@@ -5,6 +5,21 @@
 #include <vector>
 #include <map>
 
+
+
+/*
+recv()
+  ↓
+feed(clientFd, data, bytes)
+  ↓
+"NICK maria"
+  ↓
+parseLine("NICK maria")
+  ↓
+IrcCommand { command = "NICK", params = ["maria"] }
+*/
+
+
 // Parsed IRC command
 struct IrcCommand
 {
@@ -28,9 +43,6 @@ class Parser
         std::vector<IrcCommand> feed(int clientFd, const char *data, int bytes);
         void removeClient(int clientFd);
 };
-
-
-
 
 
 
