@@ -6,7 +6,7 @@
 /*   By: edidier <edidier@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/22 16:13:02 by edidier           #+#    #+#             */
-/*   Updated: 2026/05/28 17:02:02 by edidier          ###   ########.fr       */
+/*   Updated: 2026/05/28 17:46:38 by edidier          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -189,8 +189,7 @@ void Server::dispatch(Client& client, const std::string& line) {
 }
 
 void Server::cmdPass(Client& client, std::vector<std::string>& params) {
-    (void)client;
-    (void)params;
+    if (client.isRegistered == true)
 } 
 
 void Server::cmdNick(Client& client, std::vector<std::string>& params) {
