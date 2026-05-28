@@ -13,7 +13,7 @@ struct IrcCommand
     std::vector<std::string> params;
 };
 
-
+// Transdorm data received by recv() to IRC cmd
 class Parser
 {
     private:
@@ -24,7 +24,7 @@ class Parser
     public:
         Parser();
         ~Parser();
-
+        // recv() can receive a command in multiple parts, feed manages it
         std::vector<IrcCommand> feed(int clientFd, const char *data, int bytes);
         void removeClient(int clientFd);
 };
