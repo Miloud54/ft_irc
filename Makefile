@@ -14,7 +14,7 @@ NAME		=	ircserv
 CXX			=	c++
 CXXFLAGS	=	-Wall -Wextra -Werror -std=c++98 -Iincs
 
-SRCS	= srcs/main.cpp srcs/Server.cpp srcs/Client.cpp srcs/Channel.cpp srcs/parser_msg_irc.cpp
+SRCS	= srcs/main.cpp srcs/Server.cpp srcs/Client.cpp srcs/Channel.cpp srcs/parser_msg_irc.cpp srcs/cmd_helpers.cpp
 OBJS	= $(SRCS:.cpp=.o)
 
 all: $(NAME)
