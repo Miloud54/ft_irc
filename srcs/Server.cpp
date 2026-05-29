@@ -256,3 +256,37 @@ void Server::cmdPong(Client& client, std::vector<std::string>& params) {
     (void)client;
     (void)params;
 }
+
+void Server::cmdPrivmsg(Client& client, std::vector<std::string>& params) {
+    if (!client.isRegistered()) {
+        sendReply(client, ":ircserv 451 :You have not registered\r\n");
+        return;
+    }
+     if (params.size() < 2) {
+        sendReply(client, ":ircserv 411 :No recipient given (PRIVMSG)\r\n");
+        return;
+    }
+
+    std::string target = params[0];
+    std::string message = params[1];
+
+    if (target[0] == '#') {
+        Channel *chan = findChannel(target); /* demander a bru? */
+        if (chan == nullptr) {
+            sendReply(client, ":ircserv 403 " + target + " :No such channel\r\n");
+            return;
+        }
+        // rajouter a classe Channel 
+       chan->broadcastMessage(":" + client.getNickname() + " PRIVMSG " + target + " :" + message + "\r\n", client.getFd());
+    }
+    else
+    {
+        Client* recipient = findClientByNick(target);
+        if (recipient == nullptr)
+        {
+            sendReply(client, ":ircserv 401 " + target + " :No such nick\r\n");
+            return;
+        }
+        sendReply(*recipient, ":" + client.getNickname() + " PRIVMSG " + recipient->getNick() + " :" + message + "\r\n");
+    }
+}
