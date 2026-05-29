@@ -6,7 +6,7 @@
 /*   By: mamakaro <mamakaro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/22 16:45:50 by edidier           #+#    #+#             */
-/*   Updated: 2026/05/28 18:03:45 by mamakaro         ###   ########.fr       */
+/*   Updated: 2026/05/29 14:13:44 by edidier          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,6 +38,7 @@ class Server {
         void handleClient(int idx);
         void removeClient(int idx);
         void dispatch(Client& client, const std::string& line);
+        void sendReply(Client& client, const std::string& msg);
 
         void cmdPass(Client& client, std::vector<std::string>& params);
         void cmdNick(Client& client, std::vector<std::string>& params);
