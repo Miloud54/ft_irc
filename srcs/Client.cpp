@@ -6,7 +6,7 @@
 /*   By: edidier <edidier@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/28 11:50:52 by edidier           #+#    #+#             */
-/*   Updated: 2026/05/28 17:39:58 by edidier          ###   ########.fr       */
+/*   Updated: 2026/05/29 14:10:14 by edidier          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,7 @@
 #include <string>
 #include <unistd.h>
 
-Client::Client(int fd) : _fd(fd), _registered(false), _nickname(""), _username(""), _realname("") {}
+Client::Client(int fd) : _fd(fd), _registered(false), _passOk(false), _nickOk(false), _userOk(false), _nickname(""), _username(""), _realname("") {}
 
 Client::~Client() {
 }
@@ -25,6 +25,18 @@ int Client::getFd() const {
 
 bool Client::isRegistered() const {
     return _registered;
+}
+
+bool Client::isPassOk() const {
+    return _passOk;
+}
+
+bool Client::isNickOk() const {
+    return _nickOk;
+}
+
+bool Client::isUserOk() const {
+    return _userOk;
 }
 
 std::string Client::getNickname() const {
@@ -43,6 +55,22 @@ std::string Client::getBuffer() const {
     return _readBuffer;
 }
 
+void Client::setRegistered(bool val) {
+    _registered = val;
+}
+
+void Client::setPassOk(bool val) {
+    _passOk = val;
+}
+
+void Client::setNickOk(bool val) {
+    _nickOk = val;
+}
+
+void Client::setUserOk(bool val) {
+    _userOk = val;
+}
+
 void Client::setNickname(const std::string& nick) {
     _nickname = nick;
 }
@@ -53,10 +81,6 @@ void Client::setUsername(const std::string& user) {
 
 void Client::setRealname(const std::string& real) {
     _realname = real;
-}
-
-void Client::setRegistered(bool val) {
-    _registered = val;
 }
 
 void Client::appendToBuffer(const std::string& data) {
