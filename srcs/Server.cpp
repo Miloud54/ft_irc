@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mamakaro <mamakaro@student.42.fr>          +#+  +:+       +#+        */
+/*   By: edidier <edidier@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/22 16:13:02 by edidier           #+#    #+#             */
-/*   Updated: 2026/05/29 14:32:35 by edidier          ###   ########.fr       */
+/*   Updated: 2026/05/29 16:09:47 by edidier          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -239,12 +239,48 @@ void Server::cmdNick(Client& client, std::vector<std::string>& params) {
     }
     client.setNickname(params[0]);
     client.setNickOk(true);
-    std::cout << ":ircserv 001" << nickname << " :Welcome to the IRC server" << nickname << "" << std::endl;
+    if (client.isPassOk() && client.isNickOk() && client.isUserOk())
+    {
+        client.setRegistered(true);
+        sendReply(client, ":ircserv 001 " + client.getNickname() + " :Welcome to the IRC server " + client.getNickname());
+    }
 }
 
 void Server::cmdUser(Client& client, std::vector<std::string>& params) {
-    (void)client;
-    (void)params;
+    if (client.isRegistered())
+    {
+        sendReply(client, ": ircserv 462 * :You are already registered\r\n");
+        return;
+    }
+    if (params.size() < 4) 
+    {
+        sendReply(client, ": ircserv 461 * USER :Not enough parameters\r\n");
+        return;        
+    }
+    if (!client.isPassOk())
+    {
+        sendReply(client, ": ircserv 451 * :PASS is not validated yet\r\n");
+        return;
+    }
+    client.setUsername(params[0]);
+    
+    std::string realname;
+    for (size_t i = 3; i < params.size(); ++i)
+    {
+        if (i > 3)
+            realname += " ";
+        if (!params[i].empty() && params[i][0] == ':')
+            realname += params[i].substr(1);
+        else
+            realname += params[i];
+    }
+    client.setRealname(realname);
+    client.setUserOk(true);
+    if (client.isPassOk() && client.isNickOk() && client.isUserOk())
+    {
+        client.setRegistered(true);
+        sendReply(client, ":ircserv 001 " + client.getNickname() + " :Welcome to the IRC server " + client.getNickname());
+    }
 }
 
 void Server::cmdQuit(Client& client, std::vector<std::string>& params) {
