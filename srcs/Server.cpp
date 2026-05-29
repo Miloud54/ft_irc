@@ -6,7 +6,7 @@
 /*   By: edidier <edidier@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/22 16:13:02 by edidier           #+#    #+#             */
-/*   Updated: 2026/05/29 16:09:47 by edidier          ###   ########.fr       */
+/*   Updated: 2026/05/29 17:06:40 by edidier          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -198,7 +198,6 @@ void Server::sendReply(Client& client, const std::string& msg) {
     send(client.getFd(), reply.c_str(), reply.size(), 0);
 }
 
-
 void Server::cmdPass(Client& client, std::vector<std::string>& params) {
     if (client.isRegistered())
     {
@@ -284,8 +283,48 @@ void Server::cmdUser(Client& client, std::vector<std::string>& params) {
 }
 
 void Server::cmdQuit(Client& client, std::vector<std::string>& params) {
-    (void)client;
-    (void)params;
+    std::string reason = "Client Quit";
+    if(!params.empty()) 
+    {
+        std::string r;
+        for (size_t i = 0; i < params.size(); ++i)
+        {
+            if (i)
+                r += " ";
+            if (!params[i].empty() && params[i][0] == ':')
+                r += params[i].substr(1);
+            else
+                r += params[i];
+        }
+        if (!r.empty())
+            reason = r;
+    }
+    
+    std::string sender;
+    if (!client.getNickname().empty())
+        sender = client.getNickname();
+    else
+        sender = client.getUsername();
+    
+    std::string quitLine = std::string(":") + sender + " QUIT :" + reason;
+
+    for (size_t i = 0; i < _clients.size(); ++i)
+    {
+        if (_clients[i].getFd() == client.getFd())
+            continue;
+        sendReply(_clients[i], quitLine);
+    }
+
+    size_t fdIdx = 0;
+    for (size_t j; j < _fds.size(); ++j)
+    {
+        if (_fds[j].fd == client.getFd())
+        {
+            fdIdxm = j;
+            break;
+        }
+    }
+    removeClient(fdIdx);
 }
 
 void Server::cmdPong(Client& client, std::vector<std::string>& params) {

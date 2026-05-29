@@ -6,7 +6,7 @@
 /*   By: edidier <edidier@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/28 11:50:52 by edidier           #+#    #+#             */
-/*   Updated: 2026/05/29 14:10:14 by edidier          ###   ########.fr       */
+/*   Updated: 2026/05/29 16:19:31 by edidier          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,8 +16,7 @@
 
 Client::Client(int fd) : _fd(fd), _registered(false), _passOk(false), _nickOk(false), _userOk(false), _nickname(""), _username(""), _realname("") {}
 
-Client::~Client() {
-}
+Client::~Client() {}
 
 int Client::getFd() const {
     return _fd;
