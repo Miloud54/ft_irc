@@ -3,10 +3,10 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: edidier <edidier@student.42.fr>            +#+  +:+       +#+         #
+#    By: mamakaro <mamakaro@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/05/27 18:33:08 by edidier           #+#    #+#              #
-#    Updated: 2026/05/28 16:12:13 by edidier          ###   ########.fr        #
+#    Updated: 2026/05/28 17:53:14 by mamakaro         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -14,7 +14,7 @@ NAME		=	ircserv
 CXX			=	c++
 CXXFLAGS	=	-Wall -Wextra -Werror -std=c++98 -Iincs
 
-SRCS	= srcs/main.cpp srcs/Server.cpp srcs/Client.cpp
+SRCS	= srcs/main.cpp srcs/Server.cpp srcs/Client.cpp srcs/Channel.cpp srcs/parser_msg_irc.cpp
 OBJS	= $(SRCS:.cpp=.o)
 
 all: $(NAME)
