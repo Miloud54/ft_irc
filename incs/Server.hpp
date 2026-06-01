@@ -51,6 +51,11 @@ class Server {
         void cmdPrivmsg(Client& client, std::vector<std::string>& params);
         void cmdNotice(Client& client, std::vector<std::string>& params);
         void cmdMode(Client& client, std::vector<std::string>& params);
+        void cmdJoin(Client& client, std::vector<std::string>& params);
+        void cmdPart(Client& client, std::vector<std::string>& params);
+        void cmdTopic(Client& client, std::vector<std::string>& params);
+        void cmdKick(Client& client, std::vector<std::string>& params);
+        void cmdInvite(Client& client, std::vector<std::string>& params);
 
         void sendToClient(int fd, const std::string& message);
         Client* findClientByNick(const std::string& nick);
