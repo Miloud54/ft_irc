@@ -337,16 +337,20 @@ void Server::cmdPrivmsg(Client& client, std::vector<std::string>& params) {
         sendReply(client, ":ircserv 451 :You have not registered\r\n");
         return;
     }
+    if (params.empty()) {
+        sendReply(client, ":ircserv 411 " + client.getNickname() + " :No recipient given (PRIVMSG)");
+        return;
+    }
      if (params.size() < 2) {
         sendReply(client, ":ircserv 411 :No recipient given (PRIVMSG)\r\n");
         return;
     }
 
     std::string target = params[0];
-    std::string message = params[1];
+    std::string message = buildTrailing(params, 1);
 
     if (target[0] == '#') {
-        Channel *chan = findChannel(target); /* demander a bru? */
+        Channel *chan = findChannelByName(target);
         if (chan == nullptr) {
             sendReply(client, ":ircserv 403 " + target + " :No such channel\r\n");
             return;
@@ -362,6 +366,34 @@ void Server::cmdPrivmsg(Client& client, std::vector<std::string>& params) {
             sendReply(client, ":ircserv 401 " + target + " :No such nick\r\n");
             return;
         }
-        sendReply(*recipient, ":" + client.getNickname() + " PRIVMSG " + recipient->getNick() + " :" + message + "\r\n");
+        sendReply(*recipient, ":" + client.getNickname() + " PRIVMSG " + recipient->getNickname() + " :" + message + "\r\n");
     }
 }
+
+void Server::cmdNotice(Client& client, std::vector<std::string>& params)
+{
+    if (!client.isRegistered() || params.size() < 2)
+        return;
+    
+    std::string target = params[0];
+    std::string message = buildTrailing(params, 1);
+
+    if (target[0] == '#')
+    {
+        Channel* chan = findChannelByName(target);
+        if (chan)
+            chan->broadcastMessage(":" + client.getNickname() + "!" + client.getUsername() + "@localhost NOTICE " + target + " :" + message + "\r\n", client.getFd());
+    }
+    else
+    {
+        Client* recipient = findClientByNick(target);
+        if (recipient)
+            sendReply(*recipient, ":" + client.getNickname() + "!" + client.getUsername() + "@localhost NOTICE " + target + " :" + message);
+    }
+}
+
+void Servet::cmdMode(Client& client, std::vector<std::string>& params)
+{
+    
+}
+    
