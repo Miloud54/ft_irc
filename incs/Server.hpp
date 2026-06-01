@@ -22,6 +22,8 @@
 #define MAX_CLIENTS 64
 #define BUFFER_SIZE 1024
 
+std::string buildTrailing(const std::vector<std::string>& params, size_t start);
+
 class Server {
     private:
         int                         _serverFd;
@@ -52,7 +54,7 @@ class Server {
 
         void sendToClient(int fd, const std::string& message);
         Client* findClientByNick(const std::string& nick);
-        Channel* findChannel(const std::string& name);
+        Channel* findChannelByName(const std::string& name);
 
         std::vector<Channel> _channels;
         std::map<std::string, Client*> _nickToClient;

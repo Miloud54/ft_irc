@@ -2,6 +2,18 @@
 #include <sys/socket.h>
 #include <sstream>
 
+std::string buildTrailing(const std::vector<std::string>& params, size_t start) {
+    std::string msg;
+    for (size_t i = start; i < params.size(); i++) {
+        if (i > start) msg += " ";
+        msg += params[i];
+    }
+    if (!msg.empty() && msg[0] == ':')
+        msg = msg.substr(1);
+    return msg;
+}
+
+
 static std::vector<std::string> splitline(const std::string& line) {
     std::vector<std::string> tokens;
     std::istringstream iss(line);
@@ -23,7 +35,7 @@ Client* Server::findClientByNick(const std::string& nick) {
     return nullptr;
 }
 
-Channel* Server::findChannel(const std::string& name) {
+Channel* Server::findChannelByName(const std::string& name) {
     std::map<std::string, Channel*>::iterator it = _nameToChannel.find(name);
     if (it != _nameToChannel.end())
         return it->second;

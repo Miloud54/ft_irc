@@ -56,6 +56,7 @@ class Channel {
         void removeOperator(int fd);
         void invite(int fd);
         void revokeInvite(int fd);
+        void broadcastMessage(const std::string& msg, int excludeFd = -1);
 
         std::vector<int> getMembers() const;
         std::vector<int> getNonOperatorMembers() const;
