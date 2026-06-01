@@ -426,7 +426,7 @@ void Server::cmdMode(Client& client, std::vector<std::string>& params)
             modeStr += "k";
         if (chan->isUserLimitEnabled())
             modeStr += "l";
-        sendReply(client, ":ircserv 482 " + client.getNickname() + " " + target + " " + modeStr);
+        sendReply(client, ":ircserv 324 " + client.getNickname() + " " + target + " " + modeStr);
         return;
     }
 
