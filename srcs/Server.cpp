@@ -375,6 +375,7 @@ void Server::cmdNotice(Client& client, std::vector<std::string>& params)
     if (!client.isRegistered() || params.size() < 2)
         return;
     
+    
     std::string target = params[0];
     std::string message = buildTrailing(params, 1);
 
@@ -394,6 +395,6 @@ void Server::cmdNotice(Client& client, std::vector<std::string>& params)
 
 void Servet::cmdMode(Client& client, std::vector<std::string>& params)
 {
-    
+
 }
     
