@@ -19,6 +19,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <sstream>
+#include <algorithm>
 
 Server::Server(int port, const std::string& password) : _password(password) {
     _fds.reserve(64);
@@ -316,15 +317,18 @@ void Server::cmdQuit(Client& client, std::vector<std::string>& params) {
     }
 
     size_t fdIdx = 0;
-    for (size_t j; j < _fds.size(); ++j)
+    for (size_t j = 0; j < _fds.size(); ++j)
     {
         if (_fds[j].fd == client.getFd())
         {
-            fdIdxm = j;
+            fdIdx = j;
             break;
         }
     }
-    removeClient(fdIdx);
+    if (fdIdx < _fds.size())
+    {
+        removeClient(static_cast<int>(fdIdx));
+    }
 }
 
 void Server::cmdPong(Client& client, std::vector<std::string>& params) {
@@ -388,7 +392,7 @@ void Server::cmdNotice(Client& client, std::vector<std::string>& params)
     {
         Client* recipient = findClientByNick(target);
         if (recipient)
-            sendReply(*recipient, ":" + client.getNickname() + "!" + client.getUsername() + "@localhost NOTICE " + target + " :" + message);
+            sendReply(*recipient, ":fdIdxm" + client.getNickname() + "!" + client.getUsername() + "@localhost NOTICE " + target + " :" + message);
     }
 }
 
@@ -487,4 +491,61 @@ void Server::cmdMode(Client& client, std::vector<std::string>& params)
         echo += " " + params[i];
     chan-> broadcastMessage(echo + "\r\n");
 }
-    
+
+
+void Server::cmdJoin(Client& client, std::vector<std::string>& params)
+{
+
+}
+
+void Server::cmdPart(Client& client, std::vector<std::string>& params)
+{
+    if (!client.isRegistered())
+    {
+        sendReply(client, ":ircserv 451 :You have not registered");
+        return ;
+    }
+    if (params.empty())
+    {
+        sendReply(client, ":ircserv 461 PART :Not enough parameters");
+        return ;
+    }
+    std::string channelName = params[0];
+    Channel* chan = findChannelByName(channelName);
+    if (!chan)
+    {
+        sendReply(client, ":ircserv 403 " + channelName + " :No such channel");
+        return ;
+    }
+    if (!chan->hasMember(client.getFd()))
+    {
+        sendReply(client, ":ircserv 442 " + channelName + " :You're not on that channel");
+        return ;
+    }
+    std::string message = ":" + client.getNickname() + "!" + client.getUsername() + "@localhost PART " + channelName;
+    chan->broadcastMessage(message + "\r\n", client.getFd());
+    chan->removeMember(client.getFd());
+    if (chan->getMemberCount() == 0)
+    {
+        _nameToChannel.erase(chan->getName());
+        _channels.erase(std::remove_if(_channels.begin(), _channels.end(), [&](const Channel& c)
+        {
+            return c.getName() == chan->getName();
+        }), _channels.end());
+    }
+}
+
+void Server::cmdTopic(Client& client, std::vector<std::string>& params)
+{
+
+}
+
+void Server::cmdKick(Client& client, std::vector<std::string>& params)
+{
+
+}
+
+void Server::cmdInvite(Client& client, std::vector<std::string>& params)
+{
+
+}
