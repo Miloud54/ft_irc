@@ -334,7 +334,7 @@ void Server::cmdPong(Client& client, std::vector<std::string>& params) {
 
 void Server::cmdPrivmsg(Client& client, std::vector<std::string>& params) {
     if (!client.isRegistered()) {
-        sendReply(client, ":ircserv 451 :You have not registered\r\n");
+        sendReply(client, ":ircserv 451 :You have not registered");
         return;
     }
     if (params.empty()) {
@@ -342,7 +342,7 @@ void Server::cmdPrivmsg(Client& client, std::vector<std::string>& params) {
         return;
     }
      if (params.size() < 2) {
-        sendReply(client, ":ircserv 411 :No recipient given (PRIVMSG)\r\n");
+        sendReply(client, ":ircserv 411 :No recipient given (PRIVMSG)");
         return;
     }
 
@@ -351,22 +351,21 @@ void Server::cmdPrivmsg(Client& client, std::vector<std::string>& params) {
 
     if (target[0] == '#') {
         Channel *chan = findChannelByName(target);
-        if (chan == nullptr) {
-            sendReply(client, ":ircserv 403 " + target + " :No such channel\r\n");
+        if (!chan) {
+            sendReply(client, ":ircserv 403 " + client.getNickname() + " " + target + " :No such channel");
             return;
         }
-        // rajouter a classe Channel 
        chan->broadcastMessage(":" + client.getNickname() + " PRIVMSG " + target + " :" + message + "\r\n", client.getFd());
     }
     else
     {
         Client* recipient = findClientByNick(target);
-        if (recipient == nullptr)
+        if (!recipient)
         {
-            sendReply(client, ":ircserv 401 " + target + " :No such nick\r\n");
+            sendReply(client, ":ircserv 401 " + client.getNickname() + " " + target + " :No such nick");
             return;
         }
-        sendReply(*recipient, ":" + client.getNickname() + " PRIVMSG " + recipient->getNickname() + " :" + message + "\r\n");
+        sendReply(*recipient, ":" + client.getNickname() + " PRIVMSG " + recipient->getNickname() + " :" + message);
     }
 }
 
@@ -375,7 +374,7 @@ void Server::cmdNotice(Client& client, std::vector<std::string>& params)
     if (!client.isRegistered() || params.size() < 2)
         return;
     
-    
+
     std::string target = params[0];
     std::string message = buildTrailing(params, 1);
 
@@ -393,8 +392,99 @@ void Server::cmdNotice(Client& client, std::vector<std::string>& params)
     }
 }
 
-void Servet::cmdMode(Client& client, std::vector<std::string>& params)
+void Server::cmdMode(Client& client, std::vector<std::string>& params)
 {
+    if (params.empty())
+    {
+        sendReply(client, ":ircserv 461 " + client.getNickname() + " MODE :Not enough parameters");
+        return;
+    }
 
+    std::string target = params[0];
+    if (target[0] != '#')
+        return;
+    
+    Channel *chan = findChannelByName(target);
+    if (!chan)
+    {
+        sendReply(client, ":ircserv 403 " + client.getNickname() + " " + target + " :No such channel");
+        return;
+    }
+
+    if (params.size() == 1)
+    {
+        std::string modeStr = "+";
+        if (chan->isInviteOnly())
+            modeStr += "i";
+        if (chan->isTopicRestricted())
+            modeStr += "t";
+        if (chan->isKeyEnabled())
+            modeStr += "k";
+        if (chan->isUserLimitEnabled())
+            modeStr += "l";
+        sendReply(client, ":ircserv 482 " + client.getNickname() + " " + target + " " + modeStr);
+        return;
+    }
+
+    if (!chan->isOperator(client.getFd()))
+    {
+        sendReply(client, ":ircserv 482 " + client.getNickname() + " " + target + " :You're not channel operator");
+        return;
+    }
+
+    std::string modeStr = params[1];
+    size_t paramIdx = 2;
+    char sign = '+';
+
+    for (size_t i = 0; i < modeStr.size(); i++)
+    {
+        char m = modeStr[i];
+        if (m == '+'|| m == '-')
+        {
+            sign = m;
+            continue;
+        }
+        if (m == 'i')
+            chan->setInviteOnly(sign == '+');
+        else if (m == 't')
+            chan->setTopicRestricted(sign == '+');
+        else if (m == 'k')
+        {
+            if (sign == '+' && paramIdx < params.size())
+                chan->setKey(params[paramIdx++]);
+            else
+                chan-> clearKey();
+        }
+        else if (m == 'o')
+        {
+            if (paramIdx < params.size())
+            {
+                Client *op = findClientByNick(params[paramIdx++]);
+                if (op && chan->hasMember(op->getFd()))
+                {
+                    if (sign == '+')
+                        chan->addOperator(op->getFd());
+                    else
+                        chan->removeOperator(op->getFd());
+                }
+            }
+        }
+        else if (m == 'l')
+        {
+            if (sign == '+' && paramIdx < params.size())
+            {
+                std::istringstream iss(params[paramIdx++]);
+                size_t limit;
+                iss >> limit;
+                chan->setUserLimit(limit);
+            }
+            else
+                chan->clearUserLimit();
+        }
+    }
+    std::string echo = ":" + client.getNickname() + "!" + client.getUsername() + "@localhost MODE " + target;
+    for (size_t i = 1; i < params.size(); i++)
+        echo += " " + params[i];
+    chan-> broadcastMessage(echo + "\r\n");
 }
     
