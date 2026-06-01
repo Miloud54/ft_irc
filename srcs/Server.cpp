@@ -316,11 +316,11 @@ void Server::cmdQuit(Client& client, std::vector<std::string>& params) {
     }
 
     size_t fdIdx = 0;
-    for (size_t j; j < _fds.size(); ++j)
+    for (size_t j = 0; j < _fds.size(); ++j)
     {
         if (_fds[j].fd == client.getFd())
         {
-            fdIdxm = j;
+            fdIdx = j;
             break;
         }
     }
@@ -422,7 +422,7 @@ void Server::cmdMode(Client& client, std::vector<std::string>& params)
             modeStr += "k";
         if (chan->isUserLimitEnabled())
             modeStr += "l";
-        sendReply(client, ":ircserv 482 " + client.getNickname() + " " + target + " " + modeStr);
+        sendReply(client, ":ircserv 324 " + client.getNickname() + " " + target + " " + modeStr);
         return;
     }
 
