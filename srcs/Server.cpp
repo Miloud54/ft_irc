@@ -346,6 +346,15 @@ void Server::cmdQuit(Client& client, std::vector<std::string>& params) {
     }
 }
 
+void Server::cmdPing(Client& client, std::vector<std::string>& params) {
+    if (params.empty()) {
+        sendReply(client, ":ircserv 409 " + client.getNickname() + " :No origin specified");
+        return;
+    }
+    sendReply(client, ":ircserv PONG ircserv :" + params[0]);
+}
+
+
 void Server::cmdPong(Client& client, std::vector<std::string>& params) {
     (void)client;
     (void)params;
