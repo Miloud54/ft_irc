@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mamakaro <mamakaro@student.42.fr>          +#+  +:+       +#+        */
+/*   By: edidier <edidier@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/22 16:45:50 by edidier           #+#    #+#             */
-/*   Updated: 2026/05/29 14:13:44 by edidier          ###   ########.fr       */
+/*   Updated: 2026/06/03 17:36:06 by edidier          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,7 @@
 #include <map>
 #include <string>
 #include <poll.h>
+#include <ctime>
 #include "Client.hpp"
 #include "Channel.hpp"
 #include "parser_msg_irc.hpp"
@@ -65,6 +66,20 @@ class Server {
         std::map<std::string, Client*> _nickToClient;
         std::map<std::string, Channel*> _nameToChannel;
         
+        struct FileTransfer {
+            std::string senderNick;
+            std::string targetNick;
+            std::string filename;
+            size_t totalChunks;
+            std::map<size_t, std::string> chunks;
+            std::time_t lastActivity;
+        };
+
+        std::map<std::string, FileTransfer> _transfers;
+
+        void cmdFileInit(Client& client, std::vector<std::string>& params);
+        void cmdFileChunk(Client& client, std::vector<std::string>& params);
+        void cmdFileEnd(Client& client, std::vector<std::string>& params);
 
     public:
         Server(int port, const std::string& password);
