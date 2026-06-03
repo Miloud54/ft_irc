@@ -4,13 +4,13 @@
 
 ## Table of Contents
 
--[Description](#description)
--[Instructions](#instructions)
--[Usage](#usage)
--[Features](#features)
--[Technical Choices](#technical-choices)
--[Project Architecture](#project-architecture)
--[Resources](#resources)
+[Description](#description)  
+[Instructions](#instructions)  
+[Usage](#usage)  
+[Features](#features)  
+[Technical Choices](#technical-choices)  
+[Project Architecture](#project-architecture)  
+[Resources](#resources)
 
 ## Description
 
