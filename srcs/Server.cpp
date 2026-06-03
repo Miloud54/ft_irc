@@ -6,7 +6,7 @@
 /*   By: edidier <edidier@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/22 16:13:02 by edidier           #+#    #+#             */
-/*   Updated: 2026/05/29 17:06:40 by edidier          ###   ########.fr       */
+/*   Updated: 2026/06/03 12:26:34 by edidier          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -715,3 +715,4 @@ void Server::cmdInvite(Client& client, std::vector<std::string>& params)
     sendReply(*target, ":" + client.getNickname() + "!" + client.getUsername() + "@localhost INVITE " + targetNick + " :" + channelName);
     sendReply(client, ":ircserv 341 " + client.getNickname() + " " + targetNick + " " + channelName);
 }
+

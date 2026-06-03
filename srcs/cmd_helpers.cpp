@@ -32,14 +32,14 @@ Client* Server::findClientByNick(const std::string& nick) {
         if (_clients[i].getNickname() == nick)
             return &_clients[i];
     }
-    return nullptr;
+    return 0;
 }
 
 Channel* Server::findChannelByName(const std::string& name) {
     std::map<std::string, Channel*>::iterator it = _nameToChannel.find(name);
     if (it != _nameToChannel.end())
         return it->second;
-    return nullptr;
+    return 0;
 }
 
 

@@ -3,10 +3,10 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: mamakaro <mamakaro@student.42.fr>          +#+  +:+       +#+         #
+#    By: edidier <edidier@student.42.fr>            +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/05/27 18:33:08 by edidier           #+#    #+#              #
-#    Updated: 2026/05/28 17:53:14 by mamakaro         ###   ########.fr        #
+#    Updated: 2026/06/03 12:29:22 by edidier          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -15,7 +15,7 @@ BOT			=	ircbot
 CXX			=	c++
 CXXFLAGS	=	-Wall -Wextra -Werror -std=c++98 -Iincs
 
-SRCS	= srcs/main.cpp srcs/Server.cpp srcs/Client.cpp srcs/Channel.cpp srcs/parser_msg_irc.cpp srcs/cmd_helpers.cpp
+SRCS	= srcs/main.cpp srcs/Server.cpp srcs/Client.cpp srcs/Channel.cpp srcs/parser_msg_irc.cpp srcs/cmd_helpers.cpp srcs/Bot.cpp
 OBJS	= $(SRCS:.cpp=.o)
 
 all: $(NAME)
