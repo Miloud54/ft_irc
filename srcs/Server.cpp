@@ -351,7 +351,12 @@ void Server::cmdPing(Client& client, std::vector<std::string>& params) {
         sendReply(client, ":ircserv 409 " + client.getNickname() + " :No origin specified");
         return;
     }
-    sendReply(client, ":ircserv PONG ircserv :" + params[0]);
+    std::string token = params[0];
+
+    if (!token.empty() && token[0] == ':')
+        token = token.substr(1);
+
+    sendReply(client, "PONG :" + token);
 }
 
 
