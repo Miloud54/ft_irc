@@ -6,7 +6,7 @@
 /*   By: edidier <edidier@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/22 16:45:50 by edidier           #+#    #+#             */
-/*   Updated: 2026/06/03 17:36:06 by edidier          ###   ########.fr       */
+/*   Updated: 2026/06/04 18:50:58 by edidier          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,27 +59,13 @@ class Server {
         void cmdInvite(Client& client, std::vector<std::string>& params);
 
         void sendToClient(int fd, const std::string& message);
+        void cmdCap(Client& client, std::vector<std::string>& params);
         Client* findClientByNick(const std::string& nick);
         Channel* findChannelByName(const std::string& name);
 
         std::vector<Channel> _channels;
         std::map<std::string, Client*> _nickToClient;
         std::map<std::string, Channel*> _nameToChannel;
-        
-        struct FileTransfer {
-            std::string senderNick;
-            std::string targetNick;
-            std::string filename;
-            size_t totalChunks;
-            std::map<size_t, std::string> chunks;
-            std::time_t lastActivity;
-        };
-
-        std::map<std::string, FileTransfer> _transfers;
-
-        void cmdFileInit(Client& client, std::vector<std::string>& params);
-        void cmdFileChunk(Client& client, std::vector<std::string>& params);
-        void cmdFileEnd(Client& client, std::vector<std::string>& params);
 
     public:
         Server(int port, const std::string& password);
