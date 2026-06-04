@@ -6,7 +6,7 @@
 /*   By: edidier <edidier@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/22 16:13:02 by edidier           #+#    #+#             */
-/*   Updated: 2026/06/03 17:36:06 by edidier          ###   ########.fr       */
+/*   Updated: 2026/06/04 18:51:32 by edidier          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,9 +20,6 @@
 #include <unistd.h>
 #include <sstream>
 #include <algorithm>
-#include <fstream>
-#include <sys/stat.h>
-#include "base64.hpp"
 
 struct ChannelNameEquals {
     std::string name;
@@ -51,9 +48,6 @@ Server::Server(int port, const std::string& password) : _password(password) {
     _commands["TOPIC"] = &Server::cmdTopic;
     _commands["KICK"] = &Server::cmdKick;
     _commands["INVITE"] = &Server::cmdInvite;
-    _commands["FILEINIT"] = &Server::cmdFileInit;
-    _commands["FILECHUNK"] = &Server::cmdFileChunk;
-    _commands["FILEEND"] = &Server::cmdFileEnd;
     
     setupSocket(port);
 }
@@ -159,25 +153,49 @@ void Server::handleClient(int idx) {
   
     /*revc() lit les donnee dispo sur ce Fd
     Retourne : nb d'octets lus, 0 si deco propre, -1 si erreur*/
+    int clientFd = _fds[idx].fd;
     int bytes = recv(_fds[idx].fd, buf, sizeof(buf) - 1, 0);
     if (bytes <= 0)
     {
         /*0 = deco propre (client a ferme la connexion)
         <0 = erreur reseau (connexion interrompue brutalement)*/
         if (bytes == 0)
-            std::cout << "Client disconnected (fd=" << _fds[idx].fd << ")" << std::endl;
+            std::cout << "Client disconnected (fd=" << clientFd << ")" << std::endl;
         else
-            std::cerr << "recv( error on fd=" << _fds[idx].fd << " )" << std::endl;
+            std::cerr << "recv( error on fd=" << clientFd << " )" << std::endl;
         removeClient(idx);
         return;
     }
 
-    std::string data(buf, bytes);
-    _clients[idx - 1].appendToBuffer(data);
+    int cidx = -1;
+    for (size_t i = 0; i < _clients.size(); ++i) {
+        if (_clients[i].getFd() == clientFd) {
+            cidx = static_cast<int>(i);
+            break;
+        }
+    }
+    if (cidx < 0)
+        return;
 
-    std::string line;
-    while(!(line = _clients[idx - 1].extractLine()).empty())
-        dispatch(_clients[idx - 1], line);
+    _clients[cidx].appendToBuffer(std::string(buf, bytes));
+
+    while (true) {
+        cidx = -1;
+        for (size_t i = 0; i < _clients.size(); ++i) {
+            if (_clients[i].getFd() == clientFd) {
+                cidx = static_cast<int>(i);
+                break;
+            }
+        }
+        if (cidx < 0)
+            break;
+
+        std::string line = _clients[cidx].extractLine();
+        if (line.empty())
+            break;
+
+        dispatch(_clients[cidx], line);
+    }
 
 }
 
@@ -218,6 +236,12 @@ void Server::dispatch(Client& client, const std::string& line) {
 void Server::sendReply(Client& client, const std::string& msg) {
     std::string reply = msg + "\r\n";
     send(client.getFd(), reply.c_str(), reply.size(), 0);
+}
+
+void Server::cmdCap(Client& client, std::vector<std::string>& params)
+{
+    (void)client;
+    (void)params;
 }
 
 void Server::cmdPass(Client& client, std::vector<std::string>& params) {
@@ -388,6 +412,26 @@ void Server::cmdPrivmsg(Client& client, std::vector<std::string>& params) {
     std::string target = params[0];
     std::string message = buildTrailing(params, 1);
 
+    if (!message.empty() && message[0] == '\x01') {
+        if (target[0] == '#') {
+            Channel *chan = findChannelByName(target);
+            if (!chan) {
+                sendReply(client, ":ircserv 403 " + client.getNickname() + " " + target + " :No such channel");
+                return;
+            }
+            chan->broadcastMessage(":" + client.getNickname() + " PRIVMSG " + target + " :" + message + "\r\n", client.getFd());
+        }
+        else {
+            Client* recipient = findClientByNick(target);
+            if (!recipient) {
+                sendReply(client, ":ircserv 401 " + client.getNickname() + " " + target + " :No such nick");
+                return;
+            }
+            sendReply(*recipient, ":" + client.getNickname() + " PRIVMSG " + recipient->getNickname() + " :" + message);
+        }
+        return;
+    }
+    
     if (target[0] == '#') {
         Channel *chan = findChannelByName(target);
         if (!chan) {
@@ -412,22 +456,31 @@ void Server::cmdNotice(Client& client, std::vector<std::string>& params)
 {
     if (!client.isRegistered() || params.size() < 2)
         return;
-    
 
     std::string target = params[0];
     std::string message = buildTrailing(params, 1);
 
-    if (target[0] == '#')
-    {
+    if (!message.empty() && message[0] == '\x01') {
+        if (target[0] == '#') {
+            Channel* chan = findChannelByName(target);
+            if (chan)
+                chan->broadcastMessage(":" + client.getNickname() + "!" + client.getUsername() + "@localhost NOTICE " + target + " :" + message + "\r\n", client.getFd());
+        } else {
+            Client* recipient = findClientByNick(target);
+            if (recipient)
+                sendReply(*recipient, ":" + client.getNickname() + "!" + client.getUsername() + "@localhost NOTICE " + target + " :" + message);
+        }
+        return;
+    }
+
+    if (target[0] == '#') {
         Channel* chan = findChannelByName(target);
         if (chan)
             chan->broadcastMessage(":" + client.getNickname() + "!" + client.getUsername() + "@localhost NOTICE " + target + " :" + message + "\r\n", client.getFd());
-    }
-    else
-    {
+    } else {
         Client* recipient = findClientByNick(target);
         if (recipient)
-            sendReply(*recipient, ":fdIdxm" + client.getNickname() + "!" + client.getUsername() + "@localhost NOTICE " + target + " :" + message);
+            sendReply(*recipient, ":" + client.getNickname() + "!" + client.getUsername() + "@localhost NOTICE " + target + " :" + message);
     }
 }
 
@@ -725,143 +778,4 @@ void Server::cmdInvite(Client& client, std::vector<std::string>& params)
     chan->invite(target->getFd());
     sendReply(*target, ":" + client.getNickname() + "!" + client.getUsername() + "@localhost INVITE " + targetNick + " :" + channelName);
     sendReply(client, ":ircserv 341 " + client.getNickname() + " " + targetNick + " " + channelName);
-}
-
-void Server::cmdFileInit(Client& client, std::vector<std::string>& params)
-{
-    if (!client.isRegistered())
-    {
-        sendReply(client, ":ircserv 451 :You have not registered");
-        return;
-    }
-    if (params.size() < 3) 
-    {
-       sendReply(client, ":ircserv 461 FILEINIT :Not enough parameters");
-       return;   
-    }
-
-    std::string target = params[0];
-    std::string filename = params[1];
-    size_t totalChunks = 0;
-    std::istringstream iss(params[2]);
-    iss >> totalChunks;
-
-    std::string sender = client.getNickname().empty() ? client.getUsername() : client.getNickname();
-    Client* recipient = findClientByNick(target);
-    if (!recipient)
-    {
-        sendReply(client, ":ircserv 401 " + sender + " " + target + " :No such nick");
-        return;
-    }
-
-    std::string key = sender + ":" + filename;
-    FileTransfer ft;
-    ft.senderNick = sender;
-    ft.targetNick = target;
-    ft.filename = filename;
-    ft.totalChunks = totalChunks;
-    ft.lastActivity = std::time(NULL);
-    _transfers[key] = ft;
-
-    sendReply(client, ":ircserv 200 FILEINIT " + filename + " " + params[2]);
-    sendReply(*recipient, ":" + sender + " FILEINIT " + filename + " " + params[2]);
-}
-
-void Server::cmdFileChunk(Client& client, std::vector<std::string>& params)
-{
-    if (!client.isRegistered())
-    {
-        sendReply(client, ":ircserv 451 :You have not registered");
-        return;
-    }
-    if (params.size() < 4) 
-    {
-       sendReply(client, ":ircserv 461 FILECHUNK :Not enough parameters");
-       return;   
-    }
-
-    std::string target = params[0];
-    std::string filename = params[1];
-    size_t index = 0;
-    std::istringstream iss(params[2]);
-    iss >> index;
-    std::string b64 = buildTrailing(params, 3);
-
-    std::string sender = client.getNickname().empty() ? client.getUsername() : client.getNickname();
-    std::string key = sender + ":" + filename;
-    if (_transfers.count(key) == 0)
-    {
-        sendReply(client, ":ircserv 400 FILECHUNK " + filename + " :No transfer initiated");
-        return;
-    }
-
-    FileTransfer &ft = _transfers[key];
-    ft.chunks[index] = b64;
-    ft.lastActivity = std::time(NULL);
-
-    Client* recipient = findClientByNick(target);
-    if (recipient)
-        sendReply(*recipient, ":" + sender + " FILECHUNK " + filename + " " + params[2] + " :" + b64);
-    sendReply(client, ":ircserv 200 FILECHUNK " + filename + " " + params[2]);
-}
-
-void Server::cmdFileEnd(Client& client, std::vector<std::string>& params)
-{
-    if (!client.isRegistered())
-    {
-        sendReply(client, ":ircserv 451 :You have not registered");
-        return;
-    }
-    if (params.size() < 2) 
-    {
-       sendReply(client, ":ircserv 461 FILEEND :Not enough parameters");
-       return;   
-    }
-
-    std::string target = params[0];
-    std::string filename = params[1];
-    std::string sender = client.getNickname().empty() ? client.getUsername() : client.getNickname();
-    std::string key = sender + ":" + filename;
-    if (_transfers.count(key) == 0)
-    {
-        sendReply(client, ":ircserv 400 FILEEND " + filename + " :No transfer initiated");
-        return;
-    }
-
-    FileTransfer ft = _transfers[key];
-
-    /*assemble and decode*/
-    std::string assembled;
-    for (size_t i = 0; i < ft.totalChunks; ++i)
-    {
-        if (ft.chunks.count(i) == 0)
-        {
-            std::ostringstream missing;
-            missing << i;
-            sendReply(client, ":ircserv 400 FILEEND " + filename + " :Missing chunk " + missing.str());
-            return;
-        }
-        std::string part = base64_decode(ft.chunks[i]);
-        assembled.append(part);
-    }
-    
-    /*ensure storage dir*/
-    const char* storageDir = "/tmp/irc_files";
-    mkdir(storageDir, 0700);
-    std::string outPath = std::string(storageDir) + "/" + sender + "__" + filename;
-    std::ofstream ofs(outPath.c_str(), std::ios::binary);
-    if (!ofs)
-    {
-        sendReply(client, ":ircserv 500 FILEEND " + filename + " :Could not write file");
-        return;
-    }
-    ofs.write(assembled.data(), assembled.size());
-    ofs.close();
-
-    Client* recipient = findClientByNick(target);
-    if (recipient)
-        sendReply(*recipient, ":ircserv NOTICE " + recipient->getNickname() + " :" + sender + " uploaded '" + filename + "' (stored as " + outPath + ")");
-    sendReply(client, ":ircserv 200 FILEEND " + filename + " :Stored as " + outPath);
-
-    _transfers.erase(key);
 }
