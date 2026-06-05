@@ -6,11 +6,12 @@
 /*   By: edidier <edidier@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/22 16:13:02 by edidier           #+#    #+#             */
-/*   Updated: 2026/06/05 18:20:38 by edidier          ###   ########.fr       */
+/*   Updated: 2026/06/05 19:34:33 by edidier          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Server.hpp"
+#include "Signal.hpp"
 #include <iostream>
 #include <cstring>
 #include <stdexcept>
@@ -20,6 +21,10 @@
 #include <unistd.h>
 #include <sstream>
 #include <algorithm>
+#include <csignal>
+#include <cerrno>
+
+volatile sig_atomic_t g_running = 1;
 
 struct ChannelNameEquals {
     std::string name;
@@ -53,6 +58,8 @@ Server::Server(int port, const std::string& password) : _password(password) {
 }
 
 Server::~Server() {
+    std::cout << "Server destructor called" << std::endl;
+
     for (size_t i = 0; i < _fds.size(); i++)
         close(_fds[i].fd);
 }
@@ -105,15 +112,26 @@ void Server::setupSocket(int port) {
     std::cout << "Listening to port " << port << std::endl;
 }
 
+void signalHandler(int sig)
+{
+    (void)sig;
+    g_running = 0;
+}
+
 void Server::run() {
-    while (true)
+    while (g_running)
     {
         /*poll() surveille tous les Fds et bloque jusqu'a ce qu'au moins un soit pret. 
         Timout -1 = attend idefiniment.
         C'est le coeur du serveur : une seule fonction gere tous les clients*/
-        int ready = poll(_fds.data(), _fds.size(), -1);
+        int ready = poll(_fds.data(), _fds.size(), 1000);
+        
         if (ready < 0)
+        {
+            if (errno == EINTR)
+                continue;
             throw std::runtime_error("poll() failed");
+        }
         
         /*Parcours tous les Fds pour trouver ceux qui sont prets*/
         for (size_t i = 0; i < _fds.size(); i++)
@@ -449,8 +467,8 @@ void Server::cmdPrivmsg(Client& client, std::vector<std::string>& params) {
         sendReply(client, ":ircserv 411 " + client.getNickname() + " :No recipient given (PRIVMSG)");
         return;
     }
-     if (params.size() < 2) {
-        sendReply(client, ":ircserv 411 :No recipient given (PRIVMSG)");
+    if (params.size() < 2) {
+        sendReply(client, ":ircserv 412 " + client.getNickname() + " :No text to send");
         return;
     }
 
@@ -481,6 +499,11 @@ void Server::cmdPrivmsg(Client& client, std::vector<std::string>& params) {
         Channel *chan = findChannelByName(target);
         if (!chan) {
             sendReply(client, ":ircserv 403 " + client.getNickname() + " " + target + " :No such channel");
+            return;
+        }
+        if (chan->isNoOutsideMessages() && !chan->hasMember(client.getFd()))
+        {
+            sendReply(client, ":ircserv 404 " + client.getNickname() + " " + target + " :Cannot send to channel");
             return;
         }
        chan->broadcastMessage(":" + client.getNickname() + " PRIVMSG " + target + " :" + message + "\r\n", client.getFd());
@@ -618,6 +641,8 @@ void Server::cmdMode(Client& client, std::vector<std::string>& params)
             else
                 chan->clearUserLimit();
         }
+        else if (m == 'n')
+            chan->setNoOutsideMessages(sign == '+');
     }
     std::string echo = ":" + client.getNickname() + "!" + client.getUsername() + "@localhost MODE " + target;
     for (size_t i = 1; i < params.size(); i++)
@@ -641,13 +666,14 @@ void Server::cmdJoin(Client& client, std::vector<std::string>& params)
         sendReply(client, ":ircserv 403 " + client.getNickname() + " " + channelName + " :No such channel");        
         return;
     }
+    
     std::string key = (params.size() > 1) ? params[1] : "";
+    
     Channel* chan = findChannelByName(channelName);
-    if (!chan) {
+    if (!chan)
+    {
         _channels.push_back(Channel(channelName));
-        Channel& created = _channels.back();
-        _nameToChannel[channelName] = &created;
-        chan = &created;
+        chan = &_channels.back();
     }
 
     if (chan->isKeyEnabled()) {
@@ -711,7 +737,6 @@ void Server::cmdPart(Client& client, std::vector<std::string>& params)
     if (chan->getMemberCount() == 0)
     {
         std::string channelNameToErase = chan->getName();
-        _nameToChannel.erase(channelNameToErase);
         _channels.erase(std::remove_if(_channels.begin(), _channels.end(), ChannelNameEquals(channelNameToErase)), _channels.end());
     }
 }
@@ -789,7 +814,6 @@ void Server::cmdKick(Client& client, std::vector<std::string>& params)
     chan->removeMember(target->getFd());
     if (chan->getMemberCount() == 0) {
         std::string channelNameToErase = chan->getName();
-        _nameToChannel.erase(channelNameToErase);
         _channels.erase(std::remove_if(_channels.begin(), _channels.end(), ChannelNameEquals(channelNameToErase)), _channels.end());
     }
 }

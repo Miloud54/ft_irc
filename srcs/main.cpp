@@ -6,13 +6,15 @@
 /*   By: edidier <edidier@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/26 11:07:46 by edidier           #+#    #+#             */
-/*   Updated: 2026/06/05 14:46:01 by bde-la-p         ###   ########.fr       */
+/*   Updated: 2026/06/05 19:28:04 by edidier          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
+#include "Signal.hpp"
 #include "../incs/Server.hpp"
 #include <iostream>
 #include <cstdlib>
+#include <csignal>
 
 int main(int ac, char **av)
 {
@@ -31,6 +33,8 @@ int main(int ac, char **av)
         return 1;
     }
 
+    signal(SIGINT, signalHandler);
+    
     try 
     {
         Server server(port, password);
