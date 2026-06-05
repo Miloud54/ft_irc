@@ -3,11 +3,11 @@
 
 Channel::Channel()
     : _name(""), _topic(""), _key(""), _userLimit(0), _inviteOnly(false),
-      _topicRestricted(false), _keyEnabled(false), _userLimitEnabled(false) {}
+      _topicRestricted(false), _keyEnabled(false), _userLimitEnabled(false), _noOutsideMessages(false) {}
 
 Channel::Channel(const std::string& name)
     : _name(name), _topic(""), _key(""), _userLimit(0), _inviteOnly(false),
-      _topicRestricted(false), _keyEnabled(false), _userLimitEnabled(false) {}
+      _topicRestricted(false), _keyEnabled(false), _userLimitEnabled(false), _noOutsideMessages(false) {}
 
 Channel::~Channel() {}
 
@@ -117,4 +117,12 @@ void Channel::broadcastMessage(const std::string& msg, int excludeFd) {
         if (*it != excludeFd)
             send(*it, msg.c_str(), msg.size(), 0);
     }
+}
+
+bool Channel::isNoOutsideMessages() const { 
+    return _noOutsideMessages; 
+}
+
+void Channel::setNoOutsideMessages(bool enabled) { 
+    _noOutsideMessages = enabled; 
 }

@@ -6,7 +6,7 @@
 /*   By: edidier <edidier@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/22 16:45:50 by edidier           #+#    #+#             */
-/*   Updated: 2026/06/05 16:52:48 by edidier          ###   ########.fr       */
+/*   Updated: 2026/06/05 19:35:08 by edidier          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -65,7 +65,6 @@ class Server {
 
         std::vector<Channel> _channels;
         std::map<std::string, Client*> _nickToClient;
-        std::map<std::string, Channel*> _nameToChannel;
 
     public:
         Server(int port, const std::string& password);

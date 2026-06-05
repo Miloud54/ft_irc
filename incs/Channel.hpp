@@ -17,6 +17,7 @@ class Channel {
         bool _topicRestricted;
         bool _keyEnabled;
         bool _userLimitEnabled;
+        bool _noOutsideMessages;
         std::set<int> _members;
         std::set<int> _operators;
         std::set<int> _invited;
@@ -57,6 +58,8 @@ class Channel {
         void invite(int fd);
         void revokeInvite(int fd);
         void broadcastMessage(const std::string& msg, int excludeFd = -1);
+        bool isNoOutsideMessages() const;
+        void setNoOutsideMessages(bool enabled);
 
         std::vector<int> getMembers() const;
         std::vector<int> getNonOperatorMembers() const;
