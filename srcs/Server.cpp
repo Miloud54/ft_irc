@@ -6,7 +6,7 @@
 /*   By: edidier <edidier@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/22 16:13:02 by edidier           #+#    #+#             */
-/*   Updated: 2026/06/05 14:34:46 by bde-la-p         ###   ########.fr       */
+/*   Updated: 2026/06/05 17:12:01 by edidier          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -102,7 +102,7 @@ void Server::setupSocket(int port) {
     pfd.revents = 0;
     _fds.push_back(pfd);
 
-    std::cout << "Listenning to port " << port << std::endl;
+    std::cout << "Listening to port " << port << std::endl;
 }
 
 void Server::run() {
@@ -230,6 +230,8 @@ void Server::dispatch(Client& client, const std::string& line) {
     
     std::string command = tokens[0];
     std::vector<std::string> params(tokens.begin() + 1, tokens.end());
+    if (command == "CAP")
+        return; // Ignore CAP negotiation from clients (e.g., irssi)
     std::cout << "Command: " << command << std::endl;
 
     if (_commands.count(command) == 0)
@@ -271,17 +273,38 @@ void Server::cmdPass(Client& client, std::vector<std::string>& params) {
     client.setPassOk(true);
 } 
 
+
+static bool isValidNickname(const std::string& nickname) {
+    if (nickname.empty())
+        return false;
+    for (size_t i = 0; i < nickname.size(); ++i)
+    {
+        char c = nickname[i];
+        if (c == ' ' || c == '#' || c == ':')
+            return false;
+    }
+    return true;
+}
+
 void Server::cmdNick(Client& client, std::vector<std::string>& params) {
     if (!client.isPassOk())
     {
         sendReply(client, ": ircserv 451 * :PASS is not validated yet\r\n");
         return;
     }
+
     if (params.empty()) 
     {
-        sendReply(client, ": ircserv 431 * PASS :No nickname given\r\n");
+        sendReply(client, ": ircserv 431 * :No nickname given\r\n");
         return;        
     }
+
+    if (!isValidNickname(params[0]))
+    {
+        sendReply(client, ":ircserv 432 * " + params[0] + " Erroneous nickname\r\n");
+        return;
+    }
+    
     for (size_t  i = 0; i < _clients.size(); i++)
     {
         if (_clients[i].getNickname() == params[0]) 
@@ -290,8 +313,22 @@ void Server::cmdNick(Client& client, std::vector<std::string>& params) {
             return;        
         }
     }
+    
+    std::string oldNick = client.getNickname();
     client.setNickname(params[0]);
     client.setNickOk(true);
+    
+    if (!oldNick.empty() && client.isRegistered())
+    {
+        std::string nickChangeMsg = ":" + oldNick + " NICK :" + client.getNickname();
+        for (size_t i = 0; i < _channels.size(); ++i)
+        {
+            if (_channels[i].hasMember(client.getFd()))
+                _channels[i].broadcastMessage(nickChangeMsg + "\r\n", client.getFd());
+        }
+        return;
+    }
+    
     if (client.isPassOk() && client.isNickOk() && client.isUserOk())
     {
         client.setRegistered(true);
