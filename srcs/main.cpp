@@ -6,7 +6,7 @@
 /*   By: edidier <edidier@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/26 11:07:46 by edidier           #+#    #+#             */
-/*   Updated: 2026/06/05 14:44:17 by bde-la-p         ###   ########.fr       */
+/*   Updated: 2026/06/05 14:46:01 by bde-la-p         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,7 @@ int main(int ac, char **av)
 {
     if (ac != 3) 
     {   
-        std::cerr << "Usage: ./ft_irc <port> <password>" << std::endl;
+        std::cerr << "Usage: ./ircserv <port> <password>" << std::endl;
         return 1;
     }
 
