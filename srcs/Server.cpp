@@ -6,7 +6,7 @@
 /*   By: edidier <edidier@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/22 16:13:02 by edidier           #+#    #+#             */
-/*   Updated: 2026/06/04 18:51:32 by edidier          ###   ########.fr       */
+/*   Updated: 2026/06/05 14:34:46 by bde-la-p         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -68,7 +68,10 @@ void Server::setupSocket(int port) {
     sans attendre expiration du TIME_WAIT (env 60s)*/
     int opt = 1;
     if (setsockopt(_serverFd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0)
-        throw std::runtime_error("setsockopt(SO_REUSEADDR) failed");
+    {
+	close(_serverFd);
+	throw std::runtime_error("setsockopt(SO_REUSEADDR) failed");
+    }
 
     /*Mode non-bloquant : les appels comme accept() et recv() retournent immediatement
     avec -1 (EAGAIN) s'ils n'ont rien a faire au lieu de bloquer le programme*/
@@ -82,11 +85,16 @@ void Server::setupSocket(int port) {
     addr.sin_addr.s_addr = INADDR_ANY;
 
     if (bind(_serverFd, (struct sockaddr*)&addr, sizeof(addr)) < 0)
+    {
+	close(_serverFd);
         throw std::runtime_error("bind() failed");
+    }
 
     if (listen(_serverFd, 10) < 0)
-        throw std::runtime_error("listen() failed");
-
+    {   
+	close(_serverFd); 
+    	throw std::runtime_error("listen() failed");
+    }
     
     struct pollfd pfd;
     pfd.fd = _serverFd;
