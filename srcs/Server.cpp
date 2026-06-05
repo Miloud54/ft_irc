@@ -6,7 +6,7 @@
 /*   By: edidier <edidier@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/22 16:13:02 by edidier           #+#    #+#             */
-/*   Updated: 2026/06/05 17:12:01 by edidier          ###   ########.fr       */
+/*   Updated: 2026/06/05 18:20:38 by edidier          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -637,6 +637,10 @@ void Server::cmdJoin(Client& client, std::vector<std::string>& params)
         return;
     }
     std::string channelName = params[0];
+    if (channelName.empty() || channelName[0] != '#') {
+        sendReply(client, ":ircserv 403 " + client.getNickname() + " " + channelName + " :No such channel");        
+        return;
+    }
     std::string key = (params.size() > 1) ? params[1] : "";
     Channel* chan = findChannelByName(channelName);
     if (!chan) {
