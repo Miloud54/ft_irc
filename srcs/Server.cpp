@@ -6,7 +6,7 @@
 /*   By: edidier <edidier@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/22 16:13:02 by edidier           #+#    #+#             */
-/*   Updated: 2026/06/05 14:34:46 by bde-la-p         ###   ########.fr       */
+/*   Updated: 2026/06/05 15:59:12 by edidier          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -102,7 +102,7 @@ void Server::setupSocket(int port) {
     pfd.revents = 0;
     _fds.push_back(pfd);
 
-    std::cout << "Listenning to port " << port << std::endl;
+    std::cout << "Listening to port " << port << std::endl;
 }
 
 void Server::run() {
@@ -230,6 +230,8 @@ void Server::dispatch(Client& client, const std::string& line) {
     
     std::string command = tokens[0];
     std::vector<std::string> params(tokens.begin() + 1, tokens.end());
+    if (command == "CAP")
+        return; // Ignore CAP negotiation from clients (e.g., irssi)
     std::cout << "Command: " << command << std::endl;
 
     if (_commands.count(command) == 0)
