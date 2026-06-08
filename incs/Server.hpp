@@ -65,7 +65,6 @@ class Server {
 
         std::vector<Channel> _channels;
         std::map<std::string, Client*> _nickToClient;
-        std::map<std::string, Channel*> _nameToChannel;
 
     public:
         Server(int port, const std::string& password);
