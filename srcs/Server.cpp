@@ -226,10 +226,19 @@ void Server::handleClient(int idx) {
 }
 
 void Server::removeClient(int idx) {
-    close(_fds[idx].fd);
+    int fd = _fds[idx].fd;
+    for (size_t i = 0; i < _channels.size(); i++)
+        _channels[i].removeMember(fd);
+    size_t i = 0;
+    while (i < _channels.size()) {
+        if (_channels[i].getMemberCount() == 0)
+            _channels.erase(_channels.begin() + i);
+        else
+            i++;
+    }
+    close(fd);
     _fds.erase(_fds.begin() + idx);
     _clients.erase(_clients.begin() + (idx - 1));
-    
 }
 
 static std::vector<std::string> splitline(const std::string& line) {
@@ -275,17 +284,17 @@ void Server::cmdCap(Client& client, std::vector<std::string>& params)
 void Server::cmdPass(Client& client, std::vector<std::string>& params) {
     if (client.isRegistered())
     {
-        sendReply(client, ": ircserv 462 * :You are already registered\r\n");
+        sendReply(client, ": ircserv 462 * :You are already registered");
         return;
     }
-    if (params.empty()) 
+    if (params.empty())
     {
-        sendReply(client, ": ircserv 461 * PASS :Not enough parameters\r\n");
-        return;        
+        sendReply(client, ": ircserv 461 * PASS :Not enough parameters");
+        return;
     }
-    if (params[0] != _password) 
+    if (params[0] != _password)
     {
-        sendReply(client, ": ircserv 464 * :Incorrect password\r\n");
+        sendReply(client, ": ircserv 464 * :Incorrect password");
         return;        
     }
     client.setPassOk(true);
@@ -307,27 +316,27 @@ static bool isValidNickname(const std::string& nickname) {
 void Server::cmdNick(Client& client, std::vector<std::string>& params) {
     if (!client.isPassOk())
     {
-        sendReply(client, ": ircserv 451 * :PASS is not validated yet\r\n");
+        sendReply(client, ": ircserv 451 * :PASS is not validated yet");
         return;
     }
 
-    if (params.empty()) 
+    if (params.empty())
     {
-        sendReply(client, ": ircserv 431 * :No nickname given\r\n");
-        return;        
+        sendReply(client, ": ircserv 431 * :No nickname given");
+        return;
     }
 
     if (!isValidNickname(params[0]))
     {
-        sendReply(client, ":ircserv 432 * " + params[0] + " Erroneous nickname\r\n");
+        sendReply(client, ":ircserv 432 * " + params[0] + " Erroneous nickname");
         return;
     }
-    
-    for (size_t  i = 0; i < _clients.size(); i++)
+
+    for (size_t i = 0; i < _clients.size(); i++)
     {
-        if (_clients[i].getNickname() == params[0]) 
+        if (_clients[i].getNickname() == params[0])
         {
-            sendReply(client, ": ircserv 433 * " + params[0] + " :Nickname already in use\r\n");
+            sendReply(client, ": ircserv 433 * " + params[0] + " :Nickname already in use");
             return;        
         }
     }
@@ -357,17 +366,17 @@ void Server::cmdNick(Client& client, std::vector<std::string>& params) {
 void Server::cmdUser(Client& client, std::vector<std::string>& params) {
     if (client.isRegistered())
     {
-        sendReply(client, ": ircserv 462 * :You are already registered\r\n");
+        sendReply(client, ": ircserv 462 * :You are already registered");
         return;
     }
-    if (params.size() < 4) 
+    if (params.size() < 4)
     {
-        sendReply(client, ": ircserv 461 * USER :Not enough parameters\r\n");
-        return;        
+        sendReply(client, ": ircserv 461 * USER :Not enough parameters");
+        return;
     }
     if (!client.isPassOk())
     {
-        sendReply(client, ": ircserv 451 * :PASS is not validated yet\r\n");
+        sendReply(client, ": ircserv 451 * :PASS is not validated yet");
         return;
     }
     client.setUsername(params[0]);
@@ -610,8 +619,15 @@ void Server::cmdMode(Client& client, std::vector<std::string>& params)
             chan->setTopicRestricted(sign == '+');
         else if (m == 'k')
         {
-            if (sign == '+' && paramIdx < params.size())
+            if (sign == '+')
+            {
+                if (paramIdx >= params.size())
+                {
+                    sendReply(client, ":ircserv 461 " + client.getNickname() + " MODE :Not enough parameters");
+                    return;
+                }
                 chan->setKey(params[paramIdx++]);
+            }
             else
                 chan-> clearKey();
         }
@@ -619,20 +635,29 @@ void Server::cmdMode(Client& client, std::vector<std::string>& params)
         {
             if (paramIdx < params.size())
             {
-                Client *op = findClientByNick(params[paramIdx++]);
-                if (op && chan->hasMember(op->getFd()))
+                if (paramIdx < params.size())
                 {
+                    std::string opNick = params[paramIdx++];
+                    Client *op = findClientByNick(opNick);
+                    if (!op || !chan->hasMember(op->getFd())) {
+                        sendReply(client, ":ircserv 441 " + client.getNickname() + " " + opNick + " " + target + " :They aren't on that channel");
+                        continue;
+                    }
                     if (sign == '+')
                         chan->addOperator(op->getFd());
                     else
                         chan->removeOperator(op->getFd());
-                }
+                   }
             }
         }
         else if (m == 'l')
         {
-            if (sign == '+' && paramIdx < params.size())
+            if (sign == '+')
             {
+                if (paramIdx >= params.size()) {
+                    sendReply(client, ":ircserv 461 " + client.getNickname() + " MODE :Not enough parameters");
+                    return;
+                }
                 std::istringstream iss(params[paramIdx++]);
                 size_t limit;
                 iss >> limit;
@@ -643,6 +668,8 @@ void Server::cmdMode(Client& client, std::vector<std::string>& params)
         }
         else if (m == 'n')
             chan->setNoOutsideMessages(sign == '+');
+        else
+            sendReply(client, ":ircserv 472 " + client.getNickname() + " " + std::string(1, m) + " :is unknown mode char to me");
     }
     std::string echo = ":" + client.getNickname() + "!" + client.getUsername() + "@localhost MODE " + target;
     for (size_t i = 1; i < params.size(); i++)
