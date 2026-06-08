@@ -835,7 +835,6 @@ void Server::cmdKick(Client& client, std::vector<std::string>& params)
         sendReply(client, ":ircserv 441 " + client.getNickname() + " " + targetNick + " " + channelName + " :They aren't on that channel");
         return;
     }
-
     std::string kickMsg = ":" + client.getNickname() + "!" + client.getUsername() + "@localhost KICK " + channelName + " " + targetNick + " :" + reason;
     chan->broadcastMessage(kickMsg + "\r\n");
     chan->removeMember(target->getFd());
