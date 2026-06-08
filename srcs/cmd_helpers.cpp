@@ -35,11 +35,16 @@ Client* Server::findClientByNick(const std::string& nick) {
     return 0;
 }
 
-Channel* Server::findChannelByName(const std::string& name) {
-    std::map<std::string, Channel*>::iterator it = _nameToChannel.find(name);
-    if (it != _nameToChannel.end())
-        return it->second;
-    return 0;
+Channel* Server::findChannelByName(const std::string& name)
+{
+    std::vector<Channel>::iterator it;
+    
+    for (it = _channels.begin(); it != _channels.end(); ++it)
+    {
+        if (it->getName() == name)
+            return &(*it);
+    }
+    return NULL;
 }
 
 
