@@ -479,7 +479,7 @@ void Server::cmdPrivmsg(Client& client, std::vector<std::string>& params) {
                 sendReply(client, ":ircserv 403 " + client.getNickname() + " " + target + " :No such channel");
                 return;
             }
-            chan->broadcastMessage(":" + client.getNickname() + " PRIVMSG " + target + " :" + message + "\r\n", client.getFd());
+            chan->broadcastMessage(":" + client.getNickname() + "!" + client.getUsername() + "@localhost PRIVMSG " + target + " :" + message + "\r\n", client.getFd());
         }
         else {
             Client* recipient = findClientByNick(target);
@@ -487,7 +487,7 @@ void Server::cmdPrivmsg(Client& client, std::vector<std::string>& params) {
                 sendReply(client, ":ircserv 401 " + client.getNickname() + " " + target + " :No such nick");
                 return;
             }
-            sendReply(*recipient, ":" + client.getNickname() + " PRIVMSG " + recipient->getNickname() + " :" + message);
+            sendReply(*recipient, ":" + client.getNickname() + "!" + client.getUsername() + "@localhost PRIVMSG " + recipient->getNickname() + " :" + message);
         }
         return;
     }
@@ -503,7 +503,7 @@ void Server::cmdPrivmsg(Client& client, std::vector<std::string>& params) {
             sendReply(client, ":ircserv 404 " + client.getNickname() + " " + target + " :Cannot send to channel");
             return;
         }
-       chan->broadcastMessage(":" + client.getNickname() + " PRIVMSG " + target + " :" + message + "\r\n", client.getFd());
+        chan->broadcastMessage(":" + client.getNickname() + "!" + client.getUsername() + "@localhost PRIVMSG " + target + " :" + message + "\r\n", client.getFd());
     }
     else
     {
@@ -513,7 +513,7 @@ void Server::cmdPrivmsg(Client& client, std::vector<std::string>& params) {
             sendReply(client, ":ircserv 401 " + client.getNickname() + " " + target + " :No such nick");
             return;
         }
-        sendReply(*recipient, ":" + client.getNickname() + " PRIVMSG " + recipient->getNickname() + " :" + message);
+        sendReply(*recipient, ":" + client.getNickname() + "!" + client.getUsername() + "@localhost PRIVMSG " + recipient->getNickname() + " :" + message);
     }
 }
 
