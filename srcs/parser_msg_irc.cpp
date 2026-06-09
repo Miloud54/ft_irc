@@ -1,5 +1,3 @@
-
-
 #include <sstream>
 #include "parser_msg_irc.hpp"
 
