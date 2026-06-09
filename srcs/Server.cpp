@@ -844,6 +844,7 @@ void Server::cmdKick(Client& client, std::vector<std::string>& params)
     }
 }
 
+
 void Server::cmdInvite(Client& client, std::vector<std::string>& params)
 {
     if (!client.isRegistered()) {
