@@ -244,6 +244,8 @@ void Server::dispatch(Client& client, const std::string& line) {
         return;
     
     std::string command = tokens[0];
+    for (size_t i = 0; i < command.size(); i++)
+        command[i] = toupper(command[i]);
     std::vector<std::string> params(tokens.begin() + 1, tokens.end());
     if (command == "CAP")
         return; // Ignore CAP negotiation from clients (e.g., irssi)

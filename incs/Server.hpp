@@ -6,7 +6,6 @@
 #include <ctime>
 #include "Client.hpp"
 #include "Channel.hpp"
-#include "parser_msg_irc.hpp"
 
 #define MAX_CLIENTS 64
 #define BUFFER_SIZE 1024
@@ -19,7 +18,6 @@ class Server {
         std::string                 _password;
         std::vector<struct pollfd>  _fds;
         std::vector<Client>         _clients;
-        Parser                      _parser;
 
         typedef void (Server::*CommandHandler)(Client&, std::vector<std::string>&);
         std::map<std::string, CommandHandler> _commands;
