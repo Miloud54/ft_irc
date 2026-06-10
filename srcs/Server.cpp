@@ -500,9 +500,8 @@ void Server::cmdPrivmsg(Client& client, std::vector<std::string>& params) {
             sendReply(client, ":ircserv 403 " + client.getNickname() + " " + target + " :No such channel");
             return;
         }
-        if (chan->isNoOutsideMessages() && !chan->hasMember(client.getFd()))
-        {
-            sendReply(client, ":ircserv 404 " + client.getNickname() + " " + target + " :Cannot send to channel");
+        if (!chan->hasMember(client.getFd())) {
+            sendReply(client, ":ircserv 442 " + client.getNickname() + " " + target + " :You're not on that channel");
             return;
         }
         chan->broadcastMessage(":" + client.getNickname() + "!" + client.getUsername() + "@localhost PRIVMSG " + target + " :" + message + "\r\n", client.getFd());
