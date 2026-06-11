@@ -6,6 +6,8 @@
 #include <arpa/inet.h>
 #include <unistd.h>
 #include <cstdlib>
+#include <netdb.h>
+#include <cctype>
 
 #define BUFFER_SIZE 1024
 
@@ -13,7 +15,15 @@
 static void sendMsg(int fd, const std::string& msg)
 {
     std::string full = msg + "\r\n";
-    send(fd, full.c_str(), full.size(), 0);
+    size_t total = full.size();
+    size_t sent = 0;
+    while (sent < total)
+    {
+        int bytes = send(fd, full.c_str() + sent, total - sent, 0);
+        if (bytes <= 0)
+            break;
+        sent += bytes;
+    }
 }
 
 
@@ -22,6 +32,8 @@ static void handleLine(int fd, const std::string& line)
 {
     if (line.substr(0, 4) == "PING")
     {
+        std::cout << "[recv] " << line << std::endl;
+        std::cout << "[send] PONG :" << line.substr(5) << std::endl;
         sendMsg(fd, "PONG :" + line.substr(5));
         return;
     }
@@ -68,12 +80,17 @@ static void handleLine(int fd, const std::string& line)
     else
         replyTo = sender;
     
+    // Convert to lowercase for command comparison
+    std::string cmd = message;
+    for (size_t i = 0; i < cmd.size(); i++)
+        cmd[i] = tolower(cmd[i]);
+
     // typical commands of bot
-    if (message == "!hello")
+    if (cmd == "!hello")
         sendMsg(fd, "PRIVMSG " + replyTo + " :Hello " + sender +" !");
-    else if (message == "!help")
+    else if (cmd == "!help")
         sendMsg(fd, "PRIVMSG " + replyTo + " :Commandes : !hello, !help, !echo <texte>");
-    else if (message.size() > 6 && message.substr(0, 6) == "!echo ")
+    else if (cmd.size() > 6 && cmd.substr(0, 6) == "!echo ")
         sendMsg(fd, "PRIVMSG " + replyTo + " :" + message.substr(6));
 }
 
@@ -87,7 +104,6 @@ int main(int argc, char** argv)
         return 1;
     }
 
-    int port = std::atoi(argv[2]);
     int fd = socket(AF_INET, SOCK_STREAM, 0);
     if (fd < 0)
     {
@@ -95,17 +111,26 @@ int main(int argc, char** argv)
         return 1;
     }
 
-    struct sockaddr_in addr;
-    std::memset(&addr, 0, sizeof(addr));
-    addr.sin_family = AF_INET;
-    addr.sin_port = htons(port);
-    addr.sin_addr.s_addr = inet_addr(argv[1]);
+    struct addrinfo hints, *result;
+    std::memset(&hints, 0, sizeof(hints));
+    hints.ai_family = AF_INET;
+    hints.ai_socktype = SOCK_STREAM;
 
-    if (connect(fd, (struct sockaddr*)&addr, sizeof(addr)) < 0)
+    if (getaddrinfo(argv[1], argv[2], &hints, &result) != 0)
     {
-        std::cerr << "connect() failed\n";
+        std::cerr << "getaddrinfo() failed\n";
+        close(fd);
         return 1;
     }
+
+    if (connect(fd, result->ai_addr, result->ai_addrlen) < 0)
+    {
+        std::cerr << "connect() failed\n";
+        freeaddrinfo(result);
+        close(fd);
+        return 1;
+    }
+    freeaddrinfo(result);
 
     sendMsg(fd, "PASS " + std::string(argv[3]));
     sendMsg(fd, "NICK IRCbot");

@@ -244,6 +244,8 @@ void Server::dispatch(Client& client, const std::string& line) {
         return;
     
     std::string command = tokens[0];
+    for (size_t i = 0; i < command.size(); i++)
+        command[i] = toupper(command[i]);
     std::vector<std::string> params(tokens.begin() + 1, tokens.end());
     if (command == "CAP")
         return; // Ignore CAP negotiation from clients (e.g., irssi)
@@ -501,6 +503,8 @@ void Server::cmdPrivmsg(Client& client, std::vector<std::string>& params) {
         if (chan->isNoOutsideMessages() && !chan->hasMember(client.getFd()))
         {
             sendReply(client, ": ircserv 404 " + client.getNickname() + " " + target + " :Cannot send to channel");
+        if (!chan->hasMember(client.getFd())) {
+            sendReply(client, ":ircserv 442 " + client.getNickname() + " " + target + " :You're not on that channel");
             return;
         }
         chan->broadcastMessage(":" + client.getNickname() + "!" + client.getUsername() + "@localhost PRIVMSG " + target + " :" + message + "\r\n", client.getFd());
