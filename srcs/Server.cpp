@@ -878,3 +878,4 @@ void Server::cmdInvite(Client& client, std::vector<std::string>& params)
     sendReply(*target, ":" + client.getNickname() + "!" + client.getUsername() + "@localhost INVITE " + targetNick + " :" + channelName);
     sendReply(client, ":ircserv 341 " + client.getNickname() + " " + targetNick + " " + channelName);
 }
+
