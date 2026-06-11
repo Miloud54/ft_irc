@@ -122,17 +122,27 @@ void Server::run() {
         }
         
         /*Parcours tous les Fds pour trouver ceux qui sont prets*/
-        for (size_t i = 0; i < _fds.size(); i++)
+        for (size_t i = 0; i < _fds.size(); )
         {
             /*revents est rempli par poll() - POLLIN = donnees dispo
             Si ce Fd n'a rien a lire, on passe au suivant*/
-            if (!(_fds[i].revents & POLLIN))
+            if (!(_fds[i].revents & POLLIN)) {
+                i++;
                 continue;
+            }
+            if (_fds[i].fd == _serverFd) {
 
-            if (_fds[i].fd == _serverFd)
                 acceptClient(); /*New connexion entrante*/
-            else
-                handleClient(i); /*Donnees d'un client existant*/
+                i++;
+            }
+            else {
+                size_t oldSize = _fds.size();
+
+                handleClient(i);
+
+                if (_fds.size() == oldSize)
+                    i++;
+            }
         }
     }
 }
@@ -144,8 +154,11 @@ void Server::acceptClient() {
     /*accept() extrait la 1ere connexion de la file d'attente et retourne un new Fd dedie a ce client.
     Le serveurfd continue d'ecouter les nouvelles connexions*/
     int clientFd = accept(_serverFd, (struct sockaddr*)&clientAddr, &clientLen);
-    if (clientFd < 0) 
-        throw std::runtime_error("accept() failed");
+    if (clientFd < 0)
+    {
+        std::cerr << "accept failed" << std::endl;
+        return;
+    }
 
     /*Mode non-bloquant*/
     fcntl(clientFd, F_SETFL, O_NONBLOCK);
@@ -512,8 +525,12 @@ void Server::cmdPrivmsg(Client& client, std::vector<std::string>& params) {
             sendReply(client, ":ircserv 403 " + client.getNickname() + " " + target + " :No such channel");
             return;
         }
-        if (chan->isNoOutsideMessages() && !chan->hasMember(client.getFd())) {
-            sendReply(client, ":ircserv 404 " + client.getNickname() + " " + target + " :Cannot send to channel");
+        if (!chan->hasMember(client.getFd()))
+        {
+            sendReply(client,
+                ":ircserv 404 " + client.getNickname()
+                + " " + target
+                + " :Cannot send to channel");
             return;
         }
         chan->broadcastMessage(":" + client.getNickname() + "!" + client.getUsername() + "@localhost PRIVMSG " + target + " :" + message + "\r\n", client.getFd());
