@@ -361,7 +361,7 @@ void Server::cmdNick(Client& client, std::vector<std::string>& params) {
     if (client.isPassOk() && client.isNickOk() && client.isUserOk())
     {
         client.setRegistered(true);
-        sendReply(client, ": ircserv 001 " + client.getNickname() + " :Welcome to the IRC server " + client.getNickname());
+        sendReply(client, ":ircserv 001 " + client.getNickname() + " :Welcome to the IRC server " + client.getNickname());
     }
 }
 
@@ -398,7 +398,7 @@ void Server::cmdUser(Client& client, std::vector<std::string>& params) {
     if (client.isPassOk() && client.isNickOk() && client.isUserOk())
     {
         client.setRegistered(true);
-        sendReply(client, ": ircserv 001 " + client.getNickname() + " :Welcome to the IRC server " + client.getNickname());
+        sendReply(client, ":ircserv 001 " + client.getNickname() + " :Welcome to the IRC server " + client.getNickname());
     }
 }
 
