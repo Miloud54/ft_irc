@@ -37,7 +37,6 @@ static void handleLine(int fd, const std::string& line)
         sendMsg(fd, "PONG :" + line.substr(5));
         return;
     }
-
     // Treat only PRIVMSG
     if (line.find("PRIVMSG") == std::string::npos)
         return;
