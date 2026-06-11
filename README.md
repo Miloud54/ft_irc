@@ -100,7 +100,18 @@ USER alice 0 * :Alice
 JOIN #general
 PRIVMSG #general :Hello !
 ```
- 
+
+### File transfer
+
+- Send
+```bash
+/dcc send bob /tmp/file.txt
+```
+- Accept
+```bash
+/dcc get alice
+```
+
 ### Running the bot (bonus)
  
 ```bash
@@ -168,6 +179,7 @@ ft_irc/
 ├── Makefile
 ├── incs/
 │   ├── Server.hpp           # Main loop, poll(), command dispatch
+│   ├── Signal.hpp           
 │   ├── Client.hpp           # Client state (fd, registration, buffers…)
 │   ├── Channel.hpp          # Channel: members, operators, modes, topic
 │   ├── Bot.hpp              # IRC bot (bonus)

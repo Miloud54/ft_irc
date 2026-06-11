@@ -170,14 +170,30 @@ void Server::handleClient(int idx) {
     Retourne : nb d'octets lus, 0 si deco propre, -1 si erreur*/
     int clientFd = _fds[idx].fd;
     int bytes = recv(_fds[idx].fd, buf, sizeof(buf) - 1, 0);
+
     if (bytes <= 0)
     {
-        /*0 = deco propre (client a ferme la connexion)
-        <0 = erreur reseau (connexion interrompue brutalement)*/
         if (bytes == 0)
             std::cout << "Client disconnected (fd=" << clientFd << ")" << std::endl;
         else
             std::cerr << "recv( error on fd=" << clientFd << " )" << std::endl;
+
+        for (size_t i = 0; i < _clients.size(); ++i)
+        {
+            if (_clients[i].getFd() == clientFd)
+            {
+                if (!_clients[i].getNickname().empty())
+                {
+                    std::string quitLine = ":" + _clients[i].getNickname() + "!" + _clients[i].getUsername() + "@localhost QUIT :Connection closed";
+                    for (size_t j = 0; j < _clients.size(); ++j)
+                    {
+                        if (_clients[j].getFd() != clientFd)
+                            sendReply(_clients[j], quitLine);
+                    }
+                }
+                break;
+            }
+        }
         removeClient(idx);
         return;
     }
@@ -211,7 +227,6 @@ void Server::handleClient(int idx) {
 
         dispatch(_clients[cidx], line);
     }
-
 }
 
 void Server::removeClient(int idx) {
@@ -427,7 +442,9 @@ void Server::cmdQuit(Client& client, std::vector<std::string>& params) {
     else
         sender = client.getUsername();
     
-    std::string quitLine = std::string(":") + sender + " QUIT :" + reason;
+    std::string quitLine = ":" + sender + "!" + client.getUsername() + "@localhost QUIT :" + reason;
+
+    sendReply(client, quitLine); 
 
     for (size_t i = 0; i < _clients.size(); ++i)
     {
