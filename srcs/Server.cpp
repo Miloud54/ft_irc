@@ -226,7 +226,12 @@ void Server::removeClient(int idx) {
     }
     close(fd);
     _fds.erase(_fds.begin() + idx);
-    _clients.erase(_clients.begin() + (idx - 1));
+    for (size_t j = 0; j < _clients.size(); ++j) {
+        if (_clients[j].getFd() == fd) {
+            _clients.erase(_clients.begin() + j);
+            break;
+        }
+    }
 }
 
 static std::vector<std::string> splitline(const std::string& line) {
@@ -248,7 +253,7 @@ void Server::dispatch(Client& client, const std::string& line) {
         command[i] = toupper(command[i]);
     std::vector<std::string> params(tokens.begin() + 1, tokens.end());
     if (command == "CAP")
-        return; // Ignore CAP negotiation from clients (e.g., irssi)
+        return; 
     std::cout << "Command: " << command << std::endl;
 
     if (_commands.count(command) == 0)
@@ -338,6 +343,8 @@ void Server::cmdNick(Client& client, std::vector<std::string>& params) {
     if (!oldNick.empty() && client.isRegistered())
     {
         std::string nickChangeMsg = ":" + oldNick + "!" + client.getUsername() + "@localhost NICK :" + client.getNickname();
+        sendReply(client, nickChangeMsg); 
+        
         for (size_t i = 0; i < _channels.size(); ++i)
         {
             if (_channels[i].hasMember(client.getFd()))
@@ -459,15 +466,15 @@ void Server::cmdPong(Client& client, std::vector<std::string>& params) {
 
 void Server::cmdPrivmsg(Client& client, std::vector<std::string>& params) {
     if (!client.isRegistered()) {
-        sendReply(client, ":ircserv 451 :You have not registered");
+        sendReply(client, ": ircserv 451 :You have not registered");
         return;
     }
     if (params.empty()) {
-        sendReply(client, ":ircserv 411 " + client.getNickname() + " :No recipient given (PRIVMSG)");
+        sendReply(client, ": ircserv 411 " + client.getNickname() + " :No recipient given (PRIVMSG)");
         return;
     }
     if (params.size() < 2) {
-        sendReply(client, ":ircserv 412 " + client.getNickname() + " :No text to send");
+        sendReply(client, ": ircserv 412 " + client.getNickname() + " :No text to send");
         return;
     }
 
@@ -478,7 +485,7 @@ void Server::cmdPrivmsg(Client& client, std::vector<std::string>& params) {
         if (target[0] == '#') {
             Channel *chan = findChannelByName(target);
             if (!chan) {
-                sendReply(client, ":ircserv 403 " + client.getNickname() + " " + target + " :No such channel");
+                sendReply(client, ": ircserv 403 " + client.getNickname() + " " + target + " :No such channel");
                 return;
             }
             chan->broadcastMessage(":" + client.getNickname() + "!" + client.getUsername() + "@localhost PRIVMSG " + target + " :" + message + "\r\n", client.getFd());
@@ -486,7 +493,7 @@ void Server::cmdPrivmsg(Client& client, std::vector<std::string>& params) {
         else {
             Client* recipient = findClientByNick(target);
             if (!recipient) {
-                sendReply(client, ":ircserv 401 " + client.getNickname() + " " + target + " :No such nick");
+                sendReply(client, ": ircserv 401 " + client.getNickname() + " " + target + " :No such nick");
                 return;
             }
             sendReply(*recipient, ":" + client.getNickname() + "!" + client.getUsername() + "@localhost PRIVMSG " + recipient->getNickname() + " :" + message);
@@ -497,11 +504,11 @@ void Server::cmdPrivmsg(Client& client, std::vector<std::string>& params) {
     if (target[0] == '#') {
         Channel *chan = findChannelByName(target);
         if (!chan) {
-            sendReply(client, ":ircserv 403 " + client.getNickname() + " " + target + " :No such channel");
+            sendReply(client, ": ircserv 403 " + client.getNickname() + " " + target + " :No such channel");
             return;
         }
         if (chan->isNoOutsideMessages() && !chan->hasMember(client.getFd())) {
-            sendReply(client, ":ircserv 404 " + client.getNickname() + " " + target + " :Cannot send to channel");
+            sendReply(client, ": ircserv 404 " + client.getNickname() + " " + target + " :Cannot send to channel");
             return;
         }
         chan->broadcastMessage(":" + client.getNickname() + "!" + client.getUsername() + "@localhost PRIVMSG " + target + " :" + message + "\r\n", client.getFd());
@@ -509,7 +516,7 @@ void Server::cmdPrivmsg(Client& client, std::vector<std::string>& params) {
     else {
         Client* recipient = findClientByNick(target);
         if (!recipient) {
-            sendReply(client, ":ircserv 401 " + client.getNickname() + " " + target + " :No such nick");
+            sendReply(client, ": ircserv 401 " + client.getNickname() + " " + target + " :No such nick");
             return;
         }
         sendReply(*recipient, ":" + client.getNickname() + "!" + client.getUsername() + "@localhost PRIVMSG " + recipient->getNickname() + " :" + message);
@@ -746,7 +753,7 @@ void Server::cmdPart(Client& client, std::vector<std::string>& params)
         return ;
     }
     std::string message = ":" + client.getNickname() + "!" + client.getUsername() + "@localhost PART " + channelName;
-    chan->broadcastMessage(message + "\r\n", client.getFd());
+    chan->broadcastMessage(message + "\r\n");
     chan->removeMember(client.getFd());
     if (chan->getMemberCount() == 0)
     {

@@ -13,16 +13,6 @@ std::string buildTrailing(const std::vector<std::string>& params, size_t start) 
     return msg;
 }
 
-
-// static std::vector<std::string> splitline(const std::string& line) {
-//     std::vector<std::string> tokens;
-//     std::istringstream iss(line);
-//     std::string token;
-//     while (iss >> token)
-//         tokens.push_back(token);
-//     return tokens;
-// }
-
 void Server::sendToClient(int fd, const std::string& message) {
     send(fd, message.c_str(), message.size(), 0);
 }
