@@ -252,8 +252,13 @@ void Server::dispatch(Client& client, const std::string& line) {
     for (size_t i = 0; i < command.size(); i++)
         command[i] = toupper(command[i]);
     std::vector<std::string> params(tokens.begin() + 1, tokens.end());
-    if (command == "CAP")
-        return; 
+
+    if (command == "CAP") {
+        if (!params.empty() && params[0] == "LS")
+            sendReply(client, ":ircserv CAP * LS :");
+        return;
+    }
+
     std::cout << "Command: " << command << std::endl;
 
     if (_commands.count(command) == 0)
