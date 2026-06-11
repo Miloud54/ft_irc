@@ -30,13 +30,6 @@ static void sendMsg(int fd, const std::string& msg)
 
 static void handleLine(int fd, const std::string& line)
 {
-    if (line.substr(0, 4) == "PING")
-    {
-        std::cout << "[recv] " << line << std::endl;
-        std::cout << "[send] PONG :" << line.substr(5) << std::endl;
-        sendMsg(fd, "PONG :" + line.substr(5));
-        return;
-    }
     // Treat only PRIVMSG
     if (line.find("PRIVMSG") == std::string::npos)
         return;
@@ -88,9 +81,16 @@ static void handleLine(int fd, const std::string& line)
     if (cmd == "!hello")
         sendMsg(fd, "PRIVMSG " + replyTo + " :Hello " + sender +" !");
     else if (cmd == "!help")
-        sendMsg(fd, "PRIVMSG " + replyTo + " :Commandes : !hello, !help, !echo <texte>");
+        sendMsg(fd, "PRIVMSG " + replyTo + " :Commandes : !hello, !help, !echo <texte>, !upper <text>, !roll");
     else if (cmd.size() > 6 && cmd.substr(0, 6) == "!echo ")
         sendMsg(fd, "PRIVMSG " + replyTo + " :" + message.substr(6));
+    else if (cmd == "!roll")
+        sendMsg(fd, "PRIVMSG " + replyTo + " :Résultat : " + char('0' + (rand() % 6 + 1)));
+    else if (cmd.size() > 7 && cmd.substr(0, 7) == "!upper ") {
+        std::string up = message.substr(7);
+        for (size_t i = 0; i < up.size(); i++) up[i] = toupper(up[i]);
+        sendMsg(fd, "PRIVMSG " + replyTo + " :" + up);
+}
 }
 
 

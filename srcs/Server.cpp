@@ -107,6 +107,7 @@ void signalHandler(int sig)
 }
 
 void Server::run() {
+
     while (g_running)
     {
         /*poll() surveille tous les Fds et bloque jusqu'a ce qu'au moins un soit pret. 
@@ -459,7 +460,6 @@ void Server::cmdPing(Client& client, std::vector<std::string>& params) {
 
     if (!token.empty() && token[0] == ':')
         token = token.substr(1);
-
     sendReply(client, "PONG :" + token);
 }
 
