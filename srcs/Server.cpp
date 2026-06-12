@@ -777,6 +777,21 @@ void Server::cmdPart(Client& client, std::vector<std::string>& params)
     std::string message = ":" + client.getNickname() + "!" + client.getUsername() + "@localhost PART " + channelName;
     chan->broadcastMessage(message + "\r\n");
     chan->removeMember(client.getFd());
+
+      if (chan->getMemberCount() > 0)
+    {
+        std::vector<int> members = chan->getMembers();
+        bool hasOp = false;
+        for (size_t i = 0; i < members.size(); i++)
+            if (chan->isOperator(members[i]))
+            {
+                hasOp = true;
+                break;
+            }
+            if (!hasOp)
+                chan->addOperator(members[0]);
+    }
+
     if (chan->getMemberCount() == 0)
     {
         std::string channelNameToErase = chan->getName();
@@ -854,6 +869,21 @@ void Server::cmdKick(Client& client, std::vector<std::string>& params)
     std::string kickMsg = ":" + client.getNickname() + "!" + client.getUsername() + "@localhost KICK " + channelName + " " + targetNick + " :" + reason;
     chan->broadcastMessage(kickMsg + "\r\n");
     chan->removeMember(target->getFd());
+
+// If after removing member there is another one, change operator
+    if (chan->getMemberCount() > 0)
+    {
+        std::vector<int> members = chan->getMembers();
+        bool hasOp = false;
+        for (size_t i = 0; i < members.size(); i++)
+            if (chan->isOperator(members[i]))
+            {
+                hasOp = true;
+                break;
+            }
+            if (!hasOp)
+                chan->addOperator(members[0]);
+    }
     if (chan->getMemberCount() == 0) {
         std::string channelNameToErase = chan->getName();
         _channels.erase(std::remove_if(_channels.begin(), _channels.end(), ChannelNameEquals(channelNameToErase)), _channels.end());
