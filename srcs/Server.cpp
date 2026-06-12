@@ -778,18 +778,20 @@ void Server::cmdPart(Client& client, std::vector<std::string>& params)
     chan->broadcastMessage(message + "\r\n");
     chan->removeMember(client.getFd());
 
-      if (chan->getMemberCount() > 0)
+    if (chan->getMemberCount() > 0)
     {
         std::vector<int> members = chan->getMembers();
         bool hasOp = false;
         for (size_t i = 0; i < members.size(); i++)
+        {
             if (chan->isOperator(members[i]))
             {
                 hasOp = true;
                 break;
             }
-            if (!hasOp)
-                chan->addOperator(members[0]);
+        }
+        if (!hasOp)
+            chan->addOperator(members[0]);
     }
 
     if (chan->getMemberCount() == 0)
@@ -870,19 +872,20 @@ void Server::cmdKick(Client& client, std::vector<std::string>& params)
     chan->broadcastMessage(kickMsg + "\r\n");
     chan->removeMember(target->getFd());
 
-// If after removing member there is another one, change operator
     if (chan->getMemberCount() > 0)
     {
         std::vector<int> members = chan->getMembers();
         bool hasOp = false;
         for (size_t i = 0; i < members.size(); i++)
+        {
             if (chan->isOperator(members[i]))
             {
                 hasOp = true;
                 break;
             }
-            if (!hasOp)
-                chan->addOperator(members[0]);
+        }
+        if (!hasOp)
+            chan->addOperator(members[0]);
     }
     if (chan->getMemberCount() == 0) {
         std::string channelNameToErase = chan->getName();
