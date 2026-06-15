@@ -115,6 +115,7 @@ int main(int argc, char** argv)
     hints.ai_family = AF_INET;
     hints.ai_socktype = SOCK_STREAM;
 
+    // translate localhost to IP
     if (getaddrinfo(argv[1], argv[2], &hints, &result) != 0)
     {
         std::cerr << "getaddrinfo() failed\n";
@@ -131,6 +132,7 @@ int main(int argc, char** argv)
     }
     freeaddrinfo(result);
 
+    // Register like a normal client
     sendMsg(fd, "PASS " + std::string(argv[3]));
     sendMsg(fd, "NICK IRCbot");
     sendMsg(fd, "USER ircbot 0 * :IRC Bot");
