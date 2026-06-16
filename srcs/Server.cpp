@@ -649,8 +649,6 @@ void Server::cmdMode(Client& client, std::vector<std::string>& params)
         }
         else if (m == 'o')
         {
-            if (paramIdx < params.size())
-            {
                 if (paramIdx < params.size())
                 {
                     std::string opNick = params[paramIdx++];
@@ -664,7 +662,6 @@ void Server::cmdMode(Client& client, std::vector<std::string>& params)
                     else
                         chan->removeOperator(op->getFd());
                    }
-            }
         }
         else if (m == 'l')
         {
@@ -830,7 +827,7 @@ void Server::cmdTopic(Client& client, std::vector<std::string>& params)
         return;
     }
 
-    if (!chan->isOperator(client.getFd())) {
+    if (chan->isTopicRestricted() && !chan->isOperator(client.getFd())) {
         sendReply(client, ":ircserv 482 " + client.getNickname() + " " + channelName + " :You're not channel operator");
         return;
     }
