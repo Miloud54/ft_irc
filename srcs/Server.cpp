@@ -825,7 +825,12 @@ void Server::cmdTopic(Client& client, std::vector<std::string>& params)
         return;
     }
 
-    if (chan->isTopicRestricted() && !chan->isOperator(client.getFd())) {
+    if (!chan->hasMember(client.getFd())) {
+        sendReply(client, ":ircserv 442 " + client.getNickname() + " " + channelName + " :You're not on that channel");
+        return;
+    }
+
+    if (!chan->isOperator(client.getFd())) {
         sendReply(client, ":ircserv 482 " + client.getNickname() + " " + channelName + " :You're not channel operator");
         return;
     }
