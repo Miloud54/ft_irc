@@ -112,13 +112,6 @@ std::vector<int> Channel::getNonOperatorMembers() const {
     return members;
 }
 
-void Channel::broadcastMessage(const std::string& msg, int excludeFd) {
-    for (std::set<int>::const_iterator it = _members.begin(); it != _members.end(); ++it) {
-        if (*it != excludeFd)
-            send(*it, msg.c_str(), msg.size(), 0);
-    }
-}
-
 bool Channel::isNoOutsideMessages() const { 
     return _noOutsideMessages; 
 }

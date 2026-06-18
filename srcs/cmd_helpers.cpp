@@ -13,10 +13,6 @@ std::string buildTrailing(const std::vector<std::string>& params, size_t start) 
     return msg;
 }
 
-void Server::sendToClient(int fd, const std::string& message) {
-    send(fd, message.c_str(), message.size(), 0);
-}
-
 Client* Server::findClientByNick(const std::string& nick) {
     for (size_t i = 0; i < _clients.size(); i++) {
         if (_clients[i].getNickname() == nick)

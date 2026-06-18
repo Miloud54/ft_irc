@@ -28,6 +28,8 @@ class Server {
         void removeClient(int idx);
         void dispatch(Client& client, const std::string& line);
         void sendReply(Client& client, const std::string& msg);
+        void broadcastToChannel(Channel& chan, const std::string& msg, int excludeFd = -1);
+        void flushClient(int idx);
 
         void cmdPass(Client& client, std::vector<std::string>& params);
         void cmdNick(Client& client, std::vector<std::string>& params);
@@ -43,9 +45,9 @@ class Server {
         void cmdTopic(Client& client, std::vector<std::string>& params);
         void cmdKick(Client& client, std::vector<std::string>& params);
         void cmdInvite(Client& client, std::vector<std::string>& params);
+        void cmdCap(Client& client, std::vector<std::string>& params);
 
         void sendToClient(int fd, const std::string& message);
-        void cmdCap(Client& client, std::vector<std::string>& params);
         Client* findClientByNick(const std::string& nick);
         Channel* findChannelByName(const std::string& name);
 

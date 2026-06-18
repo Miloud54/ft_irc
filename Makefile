@@ -3,7 +3,7 @@ BOT			=	ircbot
 CXX			=	c++
 CXXFLAGS	=	-Wall -Wextra -Werror -std=c++98 -Iincs
 
-SRCS	= srcs/main.cpp srcs/Server.cpp srcs/Client.cpp srcs/Channel.cpp srcs/cmd_helpers.cpp
+SRCS	= srcs/main.cpp srcs/Server.cpp srcs/Client.cpp srcs/Channel.cpp srcs/cmd_helpers.cpp srcs/cmd_registration.cpp srcs/cmd_messaging.cpp srcs/cmd_channel.cpp
 OBJS	= $(SRCS:.cpp=.o)
 
 all: $(NAME)
