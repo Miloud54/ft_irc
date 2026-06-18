@@ -12,6 +12,7 @@ class Client {
         std::string _username;
         std::string _realname;
         std::string _readBuffer;
+        std::string _writeBuffer;
     
     public:
         Client (int fd);
@@ -26,6 +27,7 @@ class Client {
         std::string getUsername() const;
         std::string getRealname() const;
         std::string getBuffer() const;
+        const std::string& getWriteBuffer() const;
 
         void setRegistered(bool val);
         void setPassOk(bool val);
@@ -36,5 +38,8 @@ class Client {
         void setRealname(const std::string& real);
 
         void appendToBuffer(const std::string& data);
-        std::string extractLine();
+        void appendToWriteBuffer(const std::string& data);
+        void consumeWriteBuffer(size_t n);
+        bool hasPendingWrite() const;
+        std::string extractLine();        
 };

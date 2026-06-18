@@ -1,4 +1,4 @@
-*This project has been created as part of the 42 curriculum by edidier and mamakaro.*
+*This project has been created as part of the 42 curriculum by edidier, bde-la-p and mamakaro.*
  
 # ft_irc
  

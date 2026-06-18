@@ -42,6 +42,10 @@ std::string Client::getBuffer() const {
     return _readBuffer;
 }
 
+const std::string& Client::getWriteBuffer() const {
+    return _writeBuffer;
+}
+
 void Client::setRegistered(bool val) {
     _registered = val;
 }
@@ -72,6 +76,18 @@ void Client::setRealname(const std::string& real) {
 
 void Client::appendToBuffer(const std::string& data) {
     _readBuffer += data;
+}
+
+void Client::appendToWriteBuffer(const std::string& data) {
+    _writeBuffer += data;
+}
+
+void Client::consumeWriteBuffer(size_t n) {
+    _writeBuffer.erase(0, n);
+}
+
+bool Client::hasPendingWrite() const {
+    return !_writeBuffer.empty();
 }
 
 std::string Client::extractLine() {

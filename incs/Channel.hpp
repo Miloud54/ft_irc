@@ -57,7 +57,6 @@ class Channel {
         void removeOperator(int fd);
         void invite(int fd);
         void revokeInvite(int fd);
-        void broadcastMessage(const std::string& msg, int excludeFd = -1);
         bool isNoOutsideMessages() const;
         void setNoOutsideMessages(bool enabled);
 
