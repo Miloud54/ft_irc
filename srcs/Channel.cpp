@@ -66,7 +66,7 @@ void Channel::setTopicRestricted(bool enabled) { _topicRestricted = enabled; }
 bool Channel::canJoin(int fd) const {
     if (_inviteOnly && !isInvited(fd) && !isOperator(fd))
         return false;
-    if (_userLimitEnabled && _members.size() >= _userLimit && !isInvited(fd) && !isOperator(fd))
+    if (_userLimitEnabled && _members.size() >= _userLimit)
         return false;
     return true;
 }
