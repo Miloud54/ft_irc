@@ -132,7 +132,11 @@ void Server::run() {
         int ready = poll(_fds.data(), _fds.size(), 1000);
         
         if (ready < 0)
+        {
+            if (!g_running)
+                break;
             throw std::runtime_error("poll() failed");
+        }
         
         /*Parcours tous les Fds pour trouver ceux qui sont prets*/
         for (size_t i = 0; i < _fds.size(); i++)
