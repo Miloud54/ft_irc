@@ -1,4 +1,5 @@
 #include "Server.hpp"
+#include <iostream>
 
 void Server::cmdPass(Client& client, std::vector<std::string>& params) {
     if (client.isRegistered())
@@ -53,10 +54,13 @@ void Server::cmdNick(Client& client, std::vector<std::string>& params) {
 
     for (size_t i = 0; i < _clients.size(); i++)
     {
+        if (_clients[i].getFd() == client.getFd())
+            continue;
+
         if (_clients[i].getNickname() == params[0])
         {
             sendReply(client, ":ircserv 433 * " + params[0] + " :Nickname already in use");
-            return;        
+            return;
         }
     }
     
@@ -167,6 +171,14 @@ void Server::cmdQuit(Client& client, std::vector<std::string>& params) {
     }
     if (fdIdx < _fds.size())
     {
+        std::cout
+            << "Client quit (fd="
+            << client.getFd()
+            << ", nick="
+            << client.getNickname()
+            << ")"
+            << std::endl;
+
         removeClient(static_cast<int>(fdIdx));
     }
 }
