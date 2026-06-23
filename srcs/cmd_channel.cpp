@@ -357,7 +357,7 @@ void Server::cmdInvite(Client& client, std::vector<std::string>& params)
         sendReply(client, ":ircserv 442 " + client.getNickname() + " " + channelName + " :You're not on that channel");
         return;
     }
-    if (chan->isInviteOnly() && !chan->isOperator(client.getFd())) {
+    if (!chan->isOperator(client.getFd())) {
         sendReply(client, ":ircserv 482 " + client.getNickname() + " " + channelName + " :You're not channel operator");
         return;
     }
