@@ -9,8 +9,8 @@
 
 #define MAX_CLIENTS 64
 #define BUFFER_SIZE 1024
-#define PING_INTERVAL 300
-#define PING_TIMEOUT 300
+#define PING_INTERVAL 1800
+#define PING_TIMEOUT 1800
 
 std::string buildTrailing(const std::vector<std::string>& params, size_t start);
 
