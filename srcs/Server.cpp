@@ -124,7 +124,7 @@ void Server::flushClient(int idx)
 void Server::checkClientTimeouts() {
     std::time_t now = std::time(NULL);
     size_t i = 0;
-    
+
     while (i < _clients.size()) {
         Client& c = _clients[i];
 
@@ -143,6 +143,8 @@ void Server::checkClientTimeouts() {
 
         else {
             if (now - c.getLastPingSent() >= PING_TIMEOUT) {
+                std::cout << "Client (fd=" << c.getFd() << ", nick=" << c.getNickname()
+                            << ") timed out (no PONG received)" << std::endl;
                 int fd = c.getFd();
                 for (size_t j = 0; j < _fds.size(); j++) {
                     if (_fds[j].fd == fd) {
