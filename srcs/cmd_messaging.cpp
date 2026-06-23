@@ -14,8 +14,9 @@ void Server::cmdPing(Client& client, std::vector<std::string>& params) {
 
 
 void Server::cmdPong(Client& client, std::vector<std::string>& params) {
-    (void)client;
     (void)params;
+    client.setLastPingSent(0);
+    client.setLastActivity(std::time(NULL));
 }
 
 void Server::cmdPrivmsg(Client& client, std::vector<std::string>& params) {

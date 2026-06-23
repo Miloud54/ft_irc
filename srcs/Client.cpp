@@ -1,8 +1,11 @@
 #include "Client.hpp"
 #include <string>
 #include <unistd.h>
+#include <ctime>
 
-Client::Client(int fd) : _fd(fd), _registered(false), _passOk(false), _nickOk(false), _userOk(false), _nickname(""), _username(""), _realname("") {}
+Client::Client(int fd) : _fd(fd), _registered(false), _passOk(false), _nickOk(false), 
+    _userOk(false), _nickname(""), _username(""), _realname(""), 
+    _lastActivity(std::time(NULL)), _lastPingSent(0) {}
 
 Client::~Client() {}
 
@@ -46,6 +49,14 @@ const std::string& Client::getWriteBuffer() const {
     return _writeBuffer;
 }
 
+std::time_t Client::getLastActivity() const { 
+    return _lastActivity; 
+}
+
+std::time_t Client::getLastPingSent() const { 
+    return _lastPingSent; 
+}
+
 void Client::setRegistered(bool val) {
     _registered = val;
 }
@@ -72,6 +83,14 @@ void Client::setUsername(const std::string& user) {
 
 void Client::setRealname(const std::string& real) {
     _realname = real;
+}
+
+void Client::setLastActivity(std::time_t t) { 
+    _lastActivity = t; 
+}
+
+void Client::setLastPingSent(std::time_t t) { 
+    _lastPingSent = t; 
 }
 
 void Client::appendToBuffer(const std::string& data) {

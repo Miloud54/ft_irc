@@ -9,6 +9,8 @@
 
 #define MAX_CLIENTS 64
 #define BUFFER_SIZE 1024
+#define PING_INTERVAL 60
+#define PING_TIMEOUT 60
 
 std::string buildTrailing(const std::vector<std::string>& params, size_t start);
 
@@ -30,6 +32,7 @@ class Server {
         void sendReply(Client& client, const std::string& msg);
         void broadcastToChannel(Channel& chan, const std::string& msg, int excludeFd = -1);
         void flushClient(int idx);
+        void checkClientTimeouts();
 
         void cmdPass(Client& client, std::vector<std::string>& params);
         void cmdNick(Client& client, std::vector<std::string>& params);
