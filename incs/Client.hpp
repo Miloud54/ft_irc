@@ -1,5 +1,6 @@
 #pragma once
 #include <string>
+#include <ctime>
 
 class Client {
     private:
@@ -13,7 +14,9 @@ class Client {
         std::string _realname;
         std::string _readBuffer;
         std::string _writeBuffer;
-    
+        std::time_t _lastActivity;
+        std::time_t _lastPingSent;
+        
     public:
         Client (int fd);
         ~Client();
@@ -28,6 +31,8 @@ class Client {
         std::string getRealname() const;
         std::string getBuffer() const;
         const std::string& getWriteBuffer() const;
+        std::time_t getLastActivity() const;
+        std::time_t getLastPingSent() const;
 
         void setRegistered(bool val);
         void setPassOk(bool val);
@@ -36,6 +41,8 @@ class Client {
         void setNickname(const std::string& nick);
         void setUsername(const std::string& user);
         void setRealname(const std::string& real);
+        void setLastActivity(std::time_t t);
+        void setLastPingSent(std::time_t t);
 
         void appendToBuffer(const std::string& data);
         void appendToWriteBuffer(const std::string& data);

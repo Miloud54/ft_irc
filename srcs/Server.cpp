@@ -121,6 +121,42 @@ void Server::flushClient(int idx)
         _fds[idx].events &= ~POLLOUT;
 }
 
+void Server::checkClientTimeouts() {
+    std::time_t now = std::time(NULL);
+    size_t i = 0;
+    
+    while (i < _clients.size()) {
+        Client& c = _clients[i];
+
+        if (!c.isRegistered()) {
+            i++;
+            continue;
+        }
+
+        if (c.getLastPingSent() == 0) {
+            if (now - c.getLastActivity() >= PING_INTERVAL) {
+                sendReply(c,"PING :ircserv");
+                c.setLastPingSent(now);
+            }
+            i++;
+        }
+
+        else {
+            if (now - c.getLastPingSent() >= PING_TIMEOUT) {
+                int fd = c.getFd();
+                for (size_t j = 0; j < _fds.size(); j++) {
+                    if (_fds[j].fd == fd) {
+                        removeClient((int)j);
+                        break;
+                    }
+                }
+            
+            } else {
+                i++; 
+            }
+        }
+    }
+}
 
 void Server::run() {
 
@@ -153,6 +189,7 @@ void Server::run() {
             if (i < _fds.size() && (_fds[i].revents & POLLOUT))
                 flushClient(i);
         }
+        checkClientTimeouts();
     }
 }
 
@@ -227,6 +264,7 @@ void Server::handleClient(int idx) {
         return;
 
     _clients[cidx].appendToBuffer(std::string(buf, bytes));
+    _clients[cidx].setLastActivity(std::time(NULL));
 
     while (true) {
         cidx = -1;
