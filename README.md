@@ -185,11 +185,14 @@ ft_irc/
 │   ├── Bot.hpp              # IRC bot (bonus)
 └── srcs/
     ├── main.cpp             # Entry point, argument validation
-    ├── Server.cpp           # Server and command implementation
+    ├── Server.cpp           # Server implementation
+    ├── cmd_registration.cpp # Commands for registration implementation
+    ├── cmd_messaging.cpp    # Commands for messaging implementation
+    ├── cmd_channel.cpp      # Commands for channel implementation
+    ├── cmd_helpers.cpp      # Command helper functions
     ├── Client.cpp           # Client state management
     ├── Channel.cpp          # Channel logic
-    ├── cmd_helpers.cpp      # Command helper functions
-    └── Bot.cpp             # IRC bot (bonus)
+    └── Bot.cpp              # IRC bot (bonus)
 ```
  
 ---
